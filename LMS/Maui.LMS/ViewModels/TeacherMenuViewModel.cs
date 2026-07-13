@@ -24,11 +24,25 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
         }
     }
 
+    public Course? SelectedCourse { get; set; }
+
     public void RefreshCourses()
     {
         Courses = new ObservableCollection<Course>(
             CourseServiceProxy.Current.Courses
         );
+    }
+
+    public void DeleteSelectedCourse()
+    {
+        if (SelectedCourse == null)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.Delete(SelectedCourse.Id);
+        SelectedCourse = null;
+        RefreshCourses();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

@@ -37,6 +37,23 @@ public class CourseServiceProxy
             return;
         }
 
+        if (course.Id == 0)
+        {
+            course.Id = Courses.Count + 1;
+        }
+
         Courses.Add(course);
+    }
+
+    public Course? Delete(int id)
+    {
+        Course? course = Courses.FirstOrDefault(c => c.Id == id);
+
+        if (course != null)
+        {
+            Courses.Remove(course);
+        }
+
+        return course;
     }
 }

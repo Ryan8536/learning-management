@@ -7,7 +7,7 @@
 
     <Grid
         Padding="30"
-        RowDefinitions="Auto,*,Auto"
+        RowDefinitions="Auto,*,Auto,Auto"
         RowSpacing="20">
 
         <Label
@@ -19,6 +19,7 @@
         <CollectionView
             Grid.Row="1"
             ItemsSource="{Binding Courses}"
+            SelectedItem="{Binding SelectedCourse}"
             SelectionMode="Single">
 
             <CollectionView.ItemTemplate>
@@ -45,6 +46,11 @@
             Grid.Row="2"
             Text="Add Course"
             Clicked="AddCourseClicked" />
+
+        <Button
+            Grid.Row="3"
+            Text="Delete Course"
+            Clicked="DeleteCourseClicked" />
 
     </Grid>
 

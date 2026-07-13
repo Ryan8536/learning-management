@@ -27,4 +27,11 @@ public partial class TeacherMenuPage : ContentPage
     {
         await Shell.Current.GoToAsync("//CourseDetailPage");
     }
+
+    private void DeleteCourseClicked(
+        object? sender,
+        EventArgs e)
+    {
+        viewModel.DeleteSelectedCourse();
+    }
 }
