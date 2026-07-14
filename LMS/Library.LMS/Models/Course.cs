@@ -1,12 +1,79 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace Library.LMS.Models;
 
-public class Course
+public class Course : INotifyPropertyChanged
 {
-    public int Id { get; set; }
+    private int id;
+    private string? name;
+    private string? code;
+    private string? description;
 
-    public string? Name { get; set; }
+    public int Id
+    {
+        get
+        {
+            return id;
+        }
 
-    public string? Code { get; set; }
+        set
+        {
+            id = value;
+            NotifyPropertyChanged();
+        }
+    }
 
-    public string? Description { get; set; }
+    public string? Name
+    {
+        get
+        {
+            return name;
+        }
+
+        set
+        {
+            name = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public string? Code
+    {
+        get
+        {
+            return code;
+        }
+
+        set
+        {
+            code = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public string? Description
+    {
+        get
+        {
+            return description;
+        }
+
+        set
+        {
+            description = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void NotifyPropertyChanged(
+        [CallerMemberName] string propertyName = "")
+    {
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(propertyName)
+        );
+    }
 }
