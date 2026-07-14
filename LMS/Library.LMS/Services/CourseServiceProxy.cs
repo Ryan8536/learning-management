@@ -37,17 +37,37 @@ public class CourseServiceProxy
             return;
         }
 
-        if (course.Id == 0)
-        {
-            course.Id = Courses.Count + 1;
-        }
+        course.Id = Courses.Count == 0
+            ? 1
+            : Courses.Max(c => c.Id) + 1;
 
         Courses.Add(course);
     }
 
+    public Course? GetById(int id)
+    {
+        return Courses.FirstOrDefault(
+            course => course.Id == id
+        );
+    }
+
+    public void UpdateDescription(
+        int id,
+        string? newDescription)
+    {
+        Course? course = GetById(id);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        course.Description = newDescription;
+    }
+
     public Course? Delete(int id)
     {
-        Course? course = Courses.FirstOrDefault(c => c.Id == id);
+        Course? course = GetById(id);
 
         if (course != null)
         {

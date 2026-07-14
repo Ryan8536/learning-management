@@ -25,7 +25,23 @@ public partial class TeacherMenuPage : ContentPage
         object? sender,
         EventArgs e)
     {
-        await Shell.Current.GoToAsync("//CourseDetailPage");
+        await Shell.Current.GoToAsync(
+            "//CourseDetailPage"
+        );
+    }
+
+    private async void EditCourseClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (viewModel.SelectedCourse == null)
+        {
+            return;
+        }
+
+        await Shell.Current.GoToAsync(
+            $"//CourseDetailPage?courseId={viewModel.SelectedCourse.Id}"
+        );
     }
 
     private void DeleteCourseClicked(
