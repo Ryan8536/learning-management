@@ -66,6 +66,19 @@ public class Course : INotifyPropertyChanged
         }
     }
 
+    public List<Student> Roster { get; set; }
+
+    public List<Module> Modules { get; set; }
+
+    public List<Assignment> Assignments { get; set; }
+
+    public Course()
+    {
+        Roster = new List<Student>();
+        Modules = new List<Module>();
+        Assignments = new List<Assignment>();
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void NotifyPropertyChanged(
