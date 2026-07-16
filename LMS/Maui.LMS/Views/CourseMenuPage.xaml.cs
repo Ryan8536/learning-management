@@ -10,6 +10,7 @@ public partial class CourseMenuPage : ContentPage
 
     private Course? currentCourse;
     private Module? selectedModule;
+    private string? selectedContent;
 
     public CourseMenuPage()
     {
@@ -26,6 +27,8 @@ public partial class CourseMenuPage : ContentPage
         BindingContext = currentCourse;
 
         selectedModule = null;
+        selectedContent = null;
+
         ContentEntry.Text = "";
 
         RefreshModules();
@@ -48,7 +51,23 @@ public partial class CourseMenuPage : ContentPage
         selectedModule =
             ModulesCollectionView.SelectedItem as Module;
 
+        selectedContent = null;
+        ContentEntry.Text = "";
+
         RefreshContent();
+    }
+
+    private void ContentSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedContent =
+            ContentCollectionView.SelectedItem as string;
+
+        if (selectedContent != null)
+        {
+            ContentEntry.Text = selectedContent;
+        }
     }
 
     private void AddContentClicked(
@@ -67,6 +86,34 @@ public partial class CourseMenuPage : ContentPage
         );
 
         ContentEntry.Text = "";
+        selectedContent = null;
+
+        RefreshContent();
+    }
+
+    private void UpdateContentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedModule == null)
+        {
+            return;
+        }
+
+        if (selectedContent == null)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.UpdateModuleContent(
+            CourseId,
+            selectedModule.Id,
+            selectedContent,
+            ContentEntry.Text
+        );
+
+        ContentEntry.Text = "";
+        selectedContent = null;
 
         RefreshContent();
     }
