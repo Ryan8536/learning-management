@@ -86,6 +86,35 @@ public class CourseServiceProxy
         course.Modules.Add(newModule);
     }
 
+    public void AddModuleContent(
+        int courseId,
+        int moduleId,
+        string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Module? module = course.Modules.FirstOrDefault(
+            module => module.Id == moduleId
+        );
+
+        if (module == null)
+        {
+            return;
+        }
+
+        module.Content.Add(content);
+    }
+
     public Course? Delete(int id)
     {
         Course? course = GetById(id);
