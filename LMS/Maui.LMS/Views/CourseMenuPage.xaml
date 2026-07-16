@@ -7,8 +7,8 @@
 
     <Grid
         Padding="30"
-        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto"
-        RowSpacing="20">
+        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,*,Auto,Auto"
+        RowSpacing="15">
 
         <Label
             Grid.Row="0"
@@ -29,7 +29,9 @@
 
         <CollectionView
             x:Name="ModulesCollectionView"
-            Grid.Row="3">
+            Grid.Row="3"
+            SelectionMode="Single"
+            SelectionChanged="ModuleSelectionChanged">
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
@@ -53,8 +55,35 @@
             Text="Add Module"
             Clicked="AddModuleClicked" />
 
-        <Button
+        <Entry
+            x:Name="ContentEntry"
             Grid.Row="5"
+            Placeholder="Enter module content" />
+
+        <CollectionView
+            x:Name="ContentCollectionView"
+            Grid.Row="6">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Label
+                        Text="{Binding .}"
+                        Padding="10"
+                        FontSize="18" />
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <Button
+            Grid.Row="7"
+            Text="Add Content to Selected Module"
+            Clicked="AddContentClicked" />
+
+        <Button
+            Grid.Row="8"
             Text="Back to Teacher Menu"
             Clicked="BackClicked" />
 
