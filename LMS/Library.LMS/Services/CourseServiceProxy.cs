@@ -65,6 +65,27 @@ public class CourseServiceProxy
         course.Description = newDescription;
     }
 
+    public void AddModule(int courseId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        int newModuleId = course.Modules.Count == 0
+            ? 1
+            : course.Modules.Max(module => module.Id) + 1;
+
+        Module newModule = new Module
+        {
+            Id = newModuleId
+        };
+
+        course.Modules.Add(newModule);
+    }
+
     public Course? Delete(int id)
     {
         Course? course = GetById(id);

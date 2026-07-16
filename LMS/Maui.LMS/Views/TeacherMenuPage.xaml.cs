@@ -30,6 +30,20 @@ public partial class TeacherMenuPage : ContentPage
         );
     }
 
+    private async void OpenCourseClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (viewModel.SelectedCourse == null)
+        {
+            return;
+        }
+
+        await Shell.Current.GoToAsync(
+            $"//CourseMenuPage?courseId={viewModel.SelectedCourse.Id}"
+        );
+    }
+
     private async void EditCourseClicked(
         object? sender,
         EventArgs e)
