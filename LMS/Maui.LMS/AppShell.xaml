@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <Shell
     x:Class="Maui.LMS.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Maui.LMS"
     xmlns:views="clr-namespace:Maui.LMS.Views"
-    Shell.FlyoutBehavior="Disabled"
-    Title="Maui.LMS">
+    Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
-        Title="Home"
+        Title="Main Menu"
         Route="MainPage"
         ContentTemplate="{DataTemplate local:MainPage}" />
 
@@ -20,8 +18,13 @@
         ContentTemplate="{DataTemplate views:TeacherMenuPage}" />
 
     <ShellContent
-        Title="Add Course"
+        Title="Course Details"
         Route="CourseDetailPage"
         ContentTemplate="{DataTemplate views:CourseDetailPage}" />
+
+    <ShellContent
+        Title="Course Menu"
+        Route="CourseMenuPage"
+        ContentTemplate="{DataTemplate views:CourseMenuPage}" />
 
 </Shell>
