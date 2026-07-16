@@ -7,7 +7,7 @@
 
     <Grid
         Padding="30"
-        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,*,Auto,Auto"
+        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,*,Auto,Auto,Auto"
         RowSpacing="15">
 
         <Label
@@ -62,7 +62,9 @@
 
         <CollectionView
             x:Name="ContentCollectionView"
-            Grid.Row="6">
+            Grid.Row="6"
+            SelectionMode="Single"
+            SelectionChanged="ContentSelectionChanged">
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
@@ -84,6 +86,11 @@
 
         <Button
             Grid.Row="8"
+            Text="Update Selected Content"
+            Clicked="UpdateContentClicked" />
+
+        <Button
+            Grid.Row="9"
             Text="Back to Teacher Menu"
             Clicked="BackClicked" />
 
