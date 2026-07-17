@@ -157,6 +157,35 @@ public class CourseServiceProxy
         module.Content[contentIndex] = newContent;
     }
 
+    public void RemoveModuleContent(
+        int courseId,
+        int moduleId,
+        string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Module? module = course.Modules.FirstOrDefault(
+            module => module.Id == moduleId
+        );
+
+        if (module == null)
+        {
+            return;
+        }
+
+        module.Content.Remove(content);
+    }
+
     public Course? Delete(int id)
     {
         Course? course = GetById(id);
