@@ -12,6 +12,7 @@ public partial class CourseMenuPage : ContentPage
     private Course? currentCourse;
     private Module? selectedModule;
     private string? selectedContent;
+    private Assignment? selectedAssignment;
 
     private ObservableCollection<Module> displayedModules;
     private ObservableCollection<string> displayedContent;
@@ -51,6 +52,11 @@ public partial class CourseMenuPage : ContentPage
 
         selectedModule = null;
         selectedContent = null;
+        selectedAssignment = null;
+
+        ModulesCollectionView.SelectedItem = null;
+        ContentCollectionView.SelectedItem = null;
+        AssignmentsCollectionView.SelectedItem = null;
 
         ContentEntry.Text = "";
 
@@ -173,6 +179,15 @@ public partial class CourseMenuPage : ContentPage
         RefreshContent();
     }
 
+    private void AssignmentSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedAssignment =
+            AssignmentsCollectionView.SelectedItem
+            as Assignment;
+    }
+
     private async void AddAssignmentClicked(
         object? sender,
         EventArgs e)
@@ -227,6 +242,45 @@ public partial class CourseMenuPage : ContentPage
         RefreshAssignments();
     }
 
+    private async void DeleteAssignmentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment before deleting it.",
+                "OK"
+            );
+
+            return;
+        }
+
+        bool shouldDelete =
+            await DisplayAlertAsync(
+                "Delete Assignment",
+                "Delete the selected assignment and all of its submissions?",
+                "Delete",
+                "Cancel"
+            );
+
+        if (!shouldDelete)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.DeleteAssignment(
+            CourseId,
+            selectedAssignment.Id
+        );
+
+        selectedAssignment = null;
+        AssignmentsCollectionView.SelectedItem = null;
+
+        RefreshAssignments();
+    }
+
     private void RefreshModules()
     {
         displayedModules.Clear();
@@ -262,6 +316,8 @@ public partial class CourseMenuPage : ContentPage
     private void RefreshAssignments()
     {
         displayedAssignments.Clear();
+
+        AssignmentsCollectionView.SelectedItem = null;
 
         if (currentCourse == null)
         {
