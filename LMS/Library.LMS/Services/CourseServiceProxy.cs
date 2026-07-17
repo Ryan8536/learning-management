@@ -223,6 +223,42 @@ public class CourseServiceProxy
         course.Assignments.Add(newAssignment);
     }
 
+    public void UpdateAssignment(
+        int courseId,
+        int assignmentId,
+        string? name,
+        string? description,
+        int availablePoints,
+        DateTime dueDate)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Assignment? assignment =
+            course.Assignments.FirstOrDefault(
+                assignment => assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return;
+        }
+
+        assignment.Name = name;
+        assignment.Description = description;
+        assignment.AvailablePoints = availablePoints;
+        assignment.DueDate = dueDate;
+    }
+
     public void DeleteAssignment(
         int courseId,
         int assignmentId)

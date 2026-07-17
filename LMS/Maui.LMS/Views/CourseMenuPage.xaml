@@ -97,7 +97,7 @@
                 Margin="0,20,0,0" />
 
             <Label
-                Text="Select an assignment to delete it."
+                Text="Select an assignment to edit or delete it."
                 FontSize="14" />
 
             <CollectionView
@@ -136,9 +136,10 @@
 
             </CollectionView>
 
-            <Button
-                Text="Delete Selected Assignment"
-                Clicked="DeleteAssignmentClicked" />
+            <Label
+                Text="Assignment Details"
+                FontSize="24"
+                Margin="0,20,0,0" />
 
             <Entry
                 x:Name="AssignmentNameEntry"
@@ -154,8 +155,7 @@
                 Placeholder="Available points"
                 Keyboard="Numeric" />
 
-            <Label
-                Text="Due Date" />
+            <Label Text="Due Date" />
 
             <DatePicker
                 x:Name="AssignmentDueDatePicker" />
@@ -163,6 +163,18 @@
             <Button
                 Text="Add Assignment"
                 Clicked="AddAssignmentClicked" />
+
+            <Button
+                Text="Update Selected Assignment"
+                Clicked="UpdateAssignmentClicked" />
+
+            <Button
+                Text="Delete Selected Assignment"
+                Clicked="DeleteAssignmentClicked" />
+
+            <Button
+                Text="Clear Assignment Form"
+                Clicked="ClearAssignmentFormClicked" />
 
             <Button
                 Text="Back to Teacher Menu"

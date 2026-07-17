@@ -60,10 +60,7 @@ public partial class CourseMenuPage : ContentPage
 
         ContentEntry.Text = "";
 
-        AssignmentNameEntry.Text = "";
-        AssignmentDescriptionEditor.Text = "";
-        AssignmentPointsEntry.Text = "";
-        AssignmentDueDatePicker.Date = DateTime.Today;
+        ClearAssignmentForm();
 
         RefreshModules();
         RefreshContent();
@@ -186,6 +183,23 @@ public partial class CourseMenuPage : ContentPage
         selectedAssignment =
             AssignmentsCollectionView.SelectedItem
             as Assignment;
+
+        if (selectedAssignment == null)
+        {
+            return;
+        }
+
+        AssignmentNameEntry.Text =
+            selectedAssignment.Name;
+
+        AssignmentDescriptionEditor.Text =
+            selectedAssignment.Description;
+
+        AssignmentPointsEntry.Text =
+            selectedAssignment.AvailablePoints.ToString();
+
+        AssignmentDueDatePicker.Date =
+            selectedAssignment.DueDate;
     }
 
     private async void AddAssignmentClicked(
@@ -194,33 +208,18 @@ public partial class CourseMenuPage : ContentPage
     {
         int availablePoints;
 
-        bool pointsAreValid = int.TryParse(
+        bool formIsValid =
+            await ValidateAssignmentForm();
+
+        if (!formIsValid)
+        {
+            return;
+        }
+
+        int.TryParse(
             AssignmentPointsEntry.Text,
             out availablePoints
         );
-
-        if (!pointsAreValid)
-        {
-            await DisplayAlertAsync(
-                "Invalid Points",
-                "Available points must be a whole number.",
-                "OK"
-            );
-
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(
-            AssignmentNameEntry.Text))
-        {
-            await DisplayAlertAsync(
-                "Missing Name",
-                "Enter an assignment name.",
-                "OK"
-            );
-
-            return;
-        }
 
         DateTime dueDate =
             AssignmentDueDatePicker.Date
@@ -234,11 +233,54 @@ public partial class CourseMenuPage : ContentPage
             dueDate
         );
 
-        AssignmentNameEntry.Text = "";
-        AssignmentDescriptionEditor.Text = "";
-        AssignmentPointsEntry.Text = "";
-        AssignmentDueDatePicker.Date = DateTime.Today;
+        ClearAssignmentSelection();
+        RefreshAssignments();
+    }
 
+    private async void UpdateAssignmentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment before updating it.",
+                "OK"
+            );
+
+            return;
+        }
+
+        bool formIsValid =
+            await ValidateAssignmentForm();
+
+        if (!formIsValid)
+        {
+            return;
+        }
+
+        int availablePoints;
+
+        int.TryParse(
+            AssignmentPointsEntry.Text,
+            out availablePoints
+        );
+
+        DateTime dueDate =
+            AssignmentDueDatePicker.Date
+            ?? DateTime.Today;
+
+        CourseServiceProxy.Current.UpdateAssignment(
+            CourseId,
+            selectedAssignment.Id,
+            AssignmentNameEntry.Text,
+            AssignmentDescriptionEditor.Text,
+            availablePoints,
+            dueDate
+        );
+
+        ClearAssignmentSelection();
         RefreshAssignments();
     }
 
@@ -275,10 +317,66 @@ public partial class CourseMenuPage : ContentPage
             selectedAssignment.Id
         );
 
+        ClearAssignmentSelection();
+        RefreshAssignments();
+    }
+
+    private void ClearAssignmentFormClicked(
+        object? sender,
+        EventArgs e)
+    {
+        ClearAssignmentSelection();
+    }
+
+    private async Task<bool> ValidateAssignmentForm()
+    {
+        if (string.IsNullOrWhiteSpace(
+            AssignmentNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Name",
+                "Enter an assignment name.",
+                "OK"
+            );
+
+            return false;
+        }
+
+        int availablePoints;
+
+        bool pointsAreValid = int.TryParse(
+            AssignmentPointsEntry.Text,
+            out availablePoints
+        );
+
+        if (!pointsAreValid)
+        {
+            await DisplayAlertAsync(
+                "Invalid Points",
+                "Available points must be a whole number.",
+                "OK"
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ClearAssignmentSelection()
+    {
         selectedAssignment = null;
         AssignmentsCollectionView.SelectedItem = null;
 
-        RefreshAssignments();
+        ClearAssignmentForm();
+    }
+
+    private void ClearAssignmentForm()
+    {
+        AssignmentNameEntry.Text = "";
+        AssignmentDescriptionEditor.Text = "";
+        AssignmentPointsEntry.Text = "";
+        AssignmentDueDatePicker.Date = DateTime.Today;
     }
 
     private void RefreshModules()
