@@ -118,6 +118,32 @@ public partial class CourseMenuPage : ContentPage
         RefreshContent();
     }
 
+    private void RemoveContentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedModule == null)
+        {
+            return;
+        }
+
+        if (selectedContent == null)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.RemoveModuleContent(
+            CourseId,
+            selectedModule.Id,
+            selectedContent
+        );
+
+        ContentEntry.Text = "";
+        selectedContent = null;
+
+        RefreshContent();
+    }
+
     private void RefreshModules()
     {
         if (currentCourse == null)
@@ -140,6 +166,8 @@ public partial class CourseMenuPage : ContentPage
 
         ContentCollectionView.ItemsSource =
             new List<string>(selectedModule.Content);
+
+        ContentCollectionView.SelectedItem = null;
     }
 
     private async void BackClicked(

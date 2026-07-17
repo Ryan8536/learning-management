@@ -7,7 +7,7 @@
 
     <Grid
         Padding="30"
-        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,*,Auto,Auto,Auto"
+        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,*,Auto,Auto,Auto,Auto"
         RowSpacing="15">
 
         <Label
@@ -91,6 +91,11 @@
 
         <Button
             Grid.Row="9"
+            Text="Remove Selected Content"
+            Clicked="RemoveContentClicked" />
+
+        <Button
+            Grid.Row="10"
             Text="Back to Teacher Menu"
             Clicked="BackClicked" />
 
