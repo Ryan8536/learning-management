@@ -96,9 +96,15 @@
                 FontSize="24"
                 Margin="0,20,0,0" />
 
+            <Label
+                Text="Select an assignment to delete it."
+                FontSize="14" />
+
             <CollectionView
                 x:Name="AssignmentsCollectionView"
-                HeightRequest="220">
+                HeightRequest="220"
+                SelectionMode="Single"
+                SelectionChanged="AssignmentSelectionChanged">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -129,6 +135,10 @@
                 </CollectionView.ItemTemplate>
 
             </CollectionView>
+
+            <Button
+                Text="Delete Selected Assignment"
+                Clicked="DeleteAssignmentClicked" />
 
             <Entry
                 x:Name="AssignmentNameEntry"

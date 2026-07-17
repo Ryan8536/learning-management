@@ -223,6 +223,31 @@ public class CourseServiceProxy
         course.Assignments.Add(newAssignment);
     }
 
+    public void DeleteAssignment(
+        int courseId,
+        int assignmentId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Assignment? assignment =
+            course.Assignments.FirstOrDefault(
+                assignment => assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return;
+        }
+
+        assignment.Submissions.Clear();
+        course.Assignments.Remove(assignment);
+    }
+
     public Course? Delete(int id)
     {
         Course? course = GetById(id);
