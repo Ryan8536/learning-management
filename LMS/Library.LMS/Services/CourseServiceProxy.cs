@@ -193,6 +193,7 @@ public class CourseServiceProxy
         int availablePoints,
         DateTime dueDate)
     {
+        if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
