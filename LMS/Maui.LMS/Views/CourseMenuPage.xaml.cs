@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Library.LMS.Models;
 using Library.LMS.Services;
 
@@ -12,9 +13,31 @@ public partial class CourseMenuPage : ContentPage
     private Module? selectedModule;
     private string? selectedContent;
 
+    private ObservableCollection<Module> displayedModules;
+    private ObservableCollection<string> displayedContent;
+    private ObservableCollection<Assignment> displayedAssignments;
+
     public CourseMenuPage()
     {
         InitializeComponent();
+
+        displayedModules =
+            new ObservableCollection<Module>();
+
+        displayedContent =
+            new ObservableCollection<string>();
+
+        displayedAssignments =
+            new ObservableCollection<Assignment>();
+
+        ModulesCollectionView.ItemsSource =
+            displayedModules;
+
+        ContentCollectionView.ItemsSource =
+            displayedContent;
+
+        AssignmentsCollectionView.ItemsSource =
+            displayedAssignments;
     }
 
     private void CourseMenuPageNavigatedTo(
@@ -31,8 +54,14 @@ public partial class CourseMenuPage : ContentPage
 
         ContentEntry.Text = "";
 
+        AssignmentNameEntry.Text = "";
+        AssignmentDescriptionEditor.Text = "";
+        AssignmentPointsEntry.Text = "";
+        AssignmentDueDatePicker.Date = DateTime.Today;
+
         RefreshModules();
         RefreshContent();
+        RefreshAssignments();
     }
 
     private void AddModuleClicked(
@@ -144,30 +173,107 @@ public partial class CourseMenuPage : ContentPage
         RefreshContent();
     }
 
-    private void RefreshModules()
+    private async void AddAssignmentClicked(
+        object? sender,
+        EventArgs e)
     {
-        if (currentCourse == null)
+        int availablePoints;
+
+        bool pointsAreValid = int.TryParse(
+            AssignmentPointsEntry.Text,
+            out availablePoints
+        );
+
+        if (!pointsAreValid)
         {
-            ModulesCollectionView.ItemsSource = null;
+            await DisplayAlertAsync(
+                "Invalid Points",
+                "Available points must be a whole number.",
+                "OK"
+            );
+
             return;
         }
 
-        ModulesCollectionView.ItemsSource =
-            new List<Module>(currentCourse.Modules);
+        if (string.IsNullOrWhiteSpace(
+            AssignmentNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Name",
+                "Enter an assignment name.",
+                "OK"
+            );
+
+            return;
+        }
+
+        DateTime dueDate =
+            AssignmentDueDatePicker.Date
+            ?? DateTime.Today;
+
+        CourseServiceProxy.Current.AddAssignment(
+            CourseId,
+            AssignmentNameEntry.Text,
+            AssignmentDescriptionEditor.Text,
+            availablePoints,
+            dueDate
+        );
+
+        AssignmentNameEntry.Text = "";
+        AssignmentDescriptionEditor.Text = "";
+        AssignmentPointsEntry.Text = "";
+        AssignmentDueDatePicker.Date = DateTime.Today;
+
+        RefreshAssignments();
+    }
+
+    private void RefreshModules()
+    {
+        displayedModules.Clear();
+
+        if (currentCourse == null)
+        {
+            return;
+        }
+
+        foreach (Module module in currentCourse.Modules)
+        {
+            displayedModules.Add(module);
+        }
     }
 
     private void RefreshContent()
     {
+        displayedContent.Clear();
+
+        ContentCollectionView.SelectedItem = null;
+
         if (selectedModule == null)
         {
-            ContentCollectionView.ItemsSource = null;
             return;
         }
 
-        ContentCollectionView.ItemsSource =
-            new List<string>(selectedModule.Content);
+        foreach (string content in selectedModule.Content)
+        {
+            displayedContent.Add(content);
+        }
+    }
 
-        ContentCollectionView.SelectedItem = null;
+    private void RefreshAssignments()
+    {
+        displayedAssignments.Clear();
+
+        if (currentCourse == null)
+        {
+            return;
+        }
+
+        foreach (
+            Assignment assignment
+            in currentCourse.Assignments)
+        {
+            displayedAssignments.Add(assignment);
+        }
     }
 
     private async void BackClicked(

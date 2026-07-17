@@ -39,7 +39,7 @@ public class CourseServiceProxy
 
         course.Id = Courses.Count == 0
             ? 1
-            : Courses.Max(c => c.Id) + 1;
+            : Courses.Max(course => course.Id) + 1;
 
         Courses.Add(course);
     }
@@ -184,6 +184,42 @@ public class CourseServiceProxy
         }
 
         module.Content.Remove(content);
+    }
+
+    public void AddAssignment(
+        int courseId,
+        string? name,
+        string? description,
+        int availablePoints,
+        DateTime dueDate)
+    {
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        int newAssignmentId = course.Assignments.Count == 0
+            ? 1
+            : course.Assignments.Max(
+                assignment => assignment.Id
+            ) + 1;
+
+        Assignment newAssignment = new Assignment
+        {
+            Id = newAssignmentId,
+            Name = name,
+            Description = description,
+            AvailablePoints = availablePoints,
+            DueDate = dueDate
+        };
+
+        course.Assignments.Add(newAssignment);
     }
 
     public Course? Delete(int id)
