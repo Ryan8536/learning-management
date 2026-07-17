@@ -5,100 +5,161 @@
              Title="Course Menu"
              NavigatedTo="CourseMenuPageNavigatedTo">
 
-    <Grid
-        Padding="30"
-        RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,*,Auto,Auto,Auto,Auto"
-        RowSpacing="15">
+    <ScrollView>
 
-        <Label
-            Grid.Row="0"
-            Text="Course Menu"
-            FontSize="32"
-            HorizontalOptions="Center" />
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="15">
 
-        <Label
-            Grid.Row="1"
-            Text="{Binding Name}"
-            FontSize="24"
-            HorizontalOptions="Center" />
+            <Label
+                Text="Course Menu"
+                FontSize="32"
+                HorizontalOptions="Center" />
 
-        <Label
-            Grid.Row="2"
-            Text="{Binding Code}"
-            HorizontalOptions="Center" />
+            <Label
+                Text="{Binding Name}"
+                FontSize="24"
+                HorizontalOptions="Center" />
 
-        <CollectionView
-            x:Name="ModulesCollectionView"
-            Grid.Row="3"
-            SelectionMode="Single"
-            SelectionChanged="ModuleSelectionChanged">
+            <Label
+                Text="{Binding Code}"
+                HorizontalOptions="Center" />
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
+            <Label
+                Text="Modules"
+                FontSize="24" />
 
-                    <VerticalStackLayout Padding="10">
+            <CollectionView
+                x:Name="ModulesCollectionView"
+                HeightRequest="130"
+                SelectionMode="Single"
+                SelectionChanged="ModuleSelectionChanged">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout Padding="10">
+
+                            <Label
+                                Text="{Binding Id,
+                                       StringFormat='Module {0}'}"
+                                FontSize="20" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Button
+                Text="Add Module"
+                Clicked="AddModuleClicked" />
+
+            <Entry
+                x:Name="ContentEntry"
+                Placeholder="Enter module content" />
+
+            <CollectionView
+                x:Name="ContentCollectionView"
+                HeightRequest="130"
+                SelectionMode="Single"
+                SelectionChanged="ContentSelectionChanged">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
 
                         <Label
-                            Text="{Binding Id,
-                                   StringFormat='Module {0}'}"
-                            FontSize="20" />
+                            Text="{Binding .}"
+                            Padding="10"
+                            FontSize="18" />
 
-                    </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
 
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
+            </CollectionView>
 
-        </CollectionView>
+            <Button
+                Text="Add Content to Selected Module"
+                Clicked="AddContentClicked" />
 
-        <Button
-            Grid.Row="4"
-            Text="Add Module"
-            Clicked="AddModuleClicked" />
+            <Button
+                Text="Update Selected Content"
+                Clicked="UpdateContentClicked" />
 
-        <Entry
-            x:Name="ContentEntry"
-            Grid.Row="5"
-            Placeholder="Enter module content" />
+            <Button
+                Text="Remove Selected Content"
+                Clicked="RemoveContentClicked" />
 
-        <CollectionView
-            x:Name="ContentCollectionView"
-            Grid.Row="6"
-            SelectionMode="Single"
-            SelectionChanged="ContentSelectionChanged">
+            <Label
+                Text="Assignments"
+                FontSize="24"
+                Margin="0,20,0,0" />
 
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
+            <CollectionView
+                x:Name="AssignmentsCollectionView"
+                HeightRequest="220">
 
-                    <Label
-                        Text="{Binding .}"
-                        Padding="10"
-                        FontSize="18" />
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
 
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
 
-        </CollectionView>
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="20"
+                                FontAttributes="Bold" />
 
-        <Button
-            Grid.Row="7"
-            Text="Add Content to Selected Module"
-            Clicked="AddContentClicked" />
+                            <Label
+                                Text="{Binding Description}" />
 
-        <Button
-            Grid.Row="8"
-            Text="Update Selected Content"
-            Clicked="UpdateContentClicked" />
+                            <Label
+                                Text="{Binding AvailablePoints,
+                                       StringFormat='Points: {0}'}" />
 
-        <Button
-            Grid.Row="9"
-            Text="Remove Selected Content"
-            Clicked="RemoveContentClicked" />
+                            <Label
+                                Text="{Binding DueDate,
+                                       StringFormat='Due: {0:MM/dd/yyyy}'}" />
 
-        <Button
-            Grid.Row="10"
-            Text="Back to Teacher Menu"
-            Clicked="BackClicked" />
+                        </VerticalStackLayout>
 
-    </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Entry
+                x:Name="AssignmentNameEntry"
+                Placeholder="Assignment name" />
+
+            <Editor
+                x:Name="AssignmentDescriptionEditor"
+                Placeholder="Assignment description"
+                HeightRequest="90" />
+
+            <Entry
+                x:Name="AssignmentPointsEntry"
+                Placeholder="Available points"
+                Keyboard="Numeric" />
+
+            <Label
+                Text="Due Date" />
+
+            <DatePicker
+                x:Name="AssignmentDueDatePicker" />
+
+            <Button
+                Text="Add Assignment"
+                Clicked="AddAssignmentClicked" />
+
+            <Button
+                Text="Back to Teacher Menu"
+                Clicked="BackClicked" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
 
 </ContentPage>
