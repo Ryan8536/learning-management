@@ -25,9 +25,113 @@
                 Text="{Binding Code}"
                 HorizontalOptions="Center" />
 
+            <!-- Students -->
+
+            <Label
+                Text="Course Roster"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <CollectionView
+                x:Name="RosterCollectionView"
+                HeightRequest="160">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding Code,
+                                       StringFormat='Student Code: {0}'}" />
+
+                            <Label
+                                Text="{Binding Classification,
+                                       StringFormat='Classification: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Label
+                Text="Existing Students"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Select an existing student to enroll."
+                FontSize="14" />
+
+            <CollectionView
+                x:Name="StudentsCollectionView"
+                HeightRequest="160"
+                SelectionMode="Single"
+                SelectionChanged="StudentSelectionChanged">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding Code,
+                                       StringFormat='Student Code: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Button
+                Text="Enroll Selected Existing Student"
+                Clicked="EnrollExistingStudentClicked" />
+
+            <Label
+                Text="Create and Enroll New Student"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <Entry
+                x:Name="StudentNameEntry"
+                Placeholder="Student name" />
+
+            <Entry
+                x:Name="StudentCodeEntry"
+                Placeholder="Student code" />
+
+            <Entry
+                x:Name="StudentClassificationEntry"
+                Placeholder="Classification" />
+
+            <Button
+                Text="Create and Enroll Student"
+                Clicked="CreateAndEnrollStudentClicked" />
+
+            <!-- Modules -->
+
             <Label
                 Text="Modules"
-                FontSize="24" />
+                FontSize="24"
+                Margin="0,20,0,0" />
 
             <CollectionView
                 x:Name="ModulesCollectionView"
@@ -90,6 +194,8 @@
             <Button
                 Text="Remove Selected Content"
                 Clicked="RemoveContentClicked" />
+
+            <!-- Assignments -->
 
             <Label
                 Text="Assignments"
