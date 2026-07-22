@@ -147,7 +147,8 @@ public class CourseServiceProxy
             return;
         }
 
-        int contentIndex = module.Content.IndexOf(oldContent);
+        int contentIndex =
+            module.Content.IndexOf(oldContent);
 
         if (contentIndex == -1)
         {
@@ -205,7 +206,8 @@ public class CourseServiceProxy
             return;
         }
 
-        int newAssignmentId = course.Assignments.Count == 0
+        int newAssignmentId =
+            course.Assignments.Count == 0
             ? 1
             : course.Assignments.Max(
                 assignment => assignment.Id
@@ -245,7 +247,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -272,7 +275,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -282,6 +286,36 @@ public class CourseServiceProxy
 
         assignment.Submissions.Clear();
         course.Assignments.Remove(assignment);
+    }
+
+    public void EnrollStudent(
+        int courseId,
+        Student? student)
+    {
+        if (student == null)
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        bool studentIsAlreadyEnrolled =
+            course.Roster.Any(
+                enrolledStudent =>
+                    enrolledStudent.Id == student.Id
+            );
+
+        if (studentIsAlreadyEnrolled)
+        {
+            return;
+        }
+
+        course.Roster.Add(student);
     }
 
     public Course? Delete(int id)

@@ -13,7 +13,10 @@ public partial class CourseMenuPage : ContentPage
     private Module? selectedModule;
     private string? selectedContent;
     private Assignment? selectedAssignment;
+    private Student? selectedStudent;
 
+    private ObservableCollection<Student> displayedRoster;
+    private ObservableCollection<Student> displayedStudents;
     private ObservableCollection<Module> displayedModules;
     private ObservableCollection<string> displayedContent;
     private ObservableCollection<Assignment> displayedAssignments;
@@ -21,6 +24,12 @@ public partial class CourseMenuPage : ContentPage
     public CourseMenuPage()
     {
         InitializeComponent();
+
+        displayedRoster =
+            new ObservableCollection<Student>();
+
+        displayedStudents =
+            new ObservableCollection<Student>();
 
         displayedModules =
             new ObservableCollection<Module>();
@@ -30,6 +39,12 @@ public partial class CourseMenuPage : ContentPage
 
         displayedAssignments =
             new ObservableCollection<Assignment>();
+
+        RosterCollectionView.ItemsSource =
+            displayedRoster;
+
+        StudentsCollectionView.ItemsSource =
+            displayedStudents;
 
         ModulesCollectionView.ItemsSource =
             displayedModules;
@@ -50,21 +65,112 @@ public partial class CourseMenuPage : ContentPage
 
         BindingContext = currentCourse;
 
+        selectedStudent = null;
         selectedModule = null;
         selectedContent = null;
         selectedAssignment = null;
 
+        StudentsCollectionView.SelectedItem = null;
         ModulesCollectionView.SelectedItem = null;
         ContentCollectionView.SelectedItem = null;
         AssignmentsCollectionView.SelectedItem = null;
+
+        StudentNameEntry.Text = "";
+        StudentCodeEntry.Text = "";
+        StudentClassificationEntry.Text = "";
 
         ContentEntry.Text = "";
 
         ClearAssignmentForm();
 
+        RefreshRoster();
+        RefreshStudents();
         RefreshModules();
         RefreshContent();
         RefreshAssignments();
+    }
+
+    private void StudentSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedStudent =
+            StudentsCollectionView.SelectedItem
+            as Student;
+    }
+
+    private async void CreateAndEnrollStudentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(
+            StudentNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Name",
+                "Enter the student's name.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+            StudentCodeEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Student Code",
+                "Enter the student's code.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Student? student =
+            StudentServiceProxy.Current.Add(
+                StudentNameEntry.Text,
+                StudentCodeEntry.Text,
+                StudentClassificationEntry.Text
+            );
+
+        CourseServiceProxy.Current.EnrollStudent(
+            CourseId,
+            student
+        );
+
+        StudentNameEntry.Text = "";
+        StudentCodeEntry.Text = "";
+        StudentClassificationEntry.Text = "";
+
+        RefreshStudents();
+        RefreshRoster();
+    }
+
+    private async void EnrollExistingStudentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedStudent == null)
+        {
+            await DisplayAlertAsync(
+                "No Student Selected",
+                "Select an existing student first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.EnrollStudent(
+            CourseId,
+            selectedStudent
+        );
+
+        selectedStudent = null;
+        StudentsCollectionView.SelectedItem = null;
+
+        RefreshRoster();
     }
 
     private void AddModuleClicked(
@@ -206,8 +312,6 @@ public partial class CourseMenuPage : ContentPage
         object? sender,
         EventArgs e)
     {
-        int availablePoints;
-
         bool formIsValid =
             await ValidateAssignmentForm();
 
@@ -218,7 +322,7 @@ public partial class CourseMenuPage : ContentPage
 
         int.TryParse(
             AssignmentPointsEntry.Text,
-            out availablePoints
+            out int availablePoints
         );
 
         DateTime dueDate =
@@ -260,11 +364,9 @@ public partial class CourseMenuPage : ContentPage
             return;
         }
 
-        int availablePoints;
-
         int.TryParse(
             AssignmentPointsEntry.Text,
-            out availablePoints
+            out int availablePoints
         );
 
         DateTime dueDate =
@@ -342,11 +444,9 @@ public partial class CourseMenuPage : ContentPage
             return false;
         }
 
-        int availablePoints;
-
         bool pointsAreValid = int.TryParse(
             AssignmentPointsEntry.Text,
-            out availablePoints
+            out int availablePoints
         );
 
         if (!pointsAreValid)
@@ -377,6 +477,33 @@ public partial class CourseMenuPage : ContentPage
         AssignmentDescriptionEditor.Text = "";
         AssignmentPointsEntry.Text = "";
         AssignmentDueDatePicker.Date = DateTime.Today;
+    }
+
+    private void RefreshRoster()
+    {
+        displayedRoster.Clear();
+
+        if (currentCourse == null)
+        {
+            return;
+        }
+
+        foreach (Student student in currentCourse.Roster)
+        {
+            displayedRoster.Add(student);
+        }
+    }
+
+    private void RefreshStudents()
+    {
+        displayedStudents.Clear();
+
+        foreach (
+            Student student
+            in StudentServiceProxy.Current.Students)
+        {
+            displayedStudents.Add(student);
+        }
     }
 
     private void RefreshModules()
