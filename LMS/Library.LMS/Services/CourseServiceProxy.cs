@@ -372,12 +372,59 @@ public class CourseServiceProxy
             StudentId = studentId,
             AssignmentId = assignmentId,
             Content = content,
-            SubmissionDate = DateTime.Now
+            SubmissionDate = DateTime.Now,
+            Grade = null
         };
 
         assignment.Submissions.Add(newSubmission);
 
         return newSubmission;
+    }
+
+    public bool GradeSubmission(
+        int courseId,
+        int assignmentId,
+        int submissionId,
+        int grade)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return false;
+        }
+
+        Assignment? assignment =
+            course.Assignments.FirstOrDefault(
+                assignment =>
+                    assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return false;
+        }
+
+        if (grade < 0 ||
+            grade > assignment.AvailablePoints)
+        {
+            return false;
+        }
+
+        Submission? submission =
+            assignment.Submissions.FirstOrDefault(
+                submission =>
+                    submission.Id == submissionId
+            );
+
+        if (submission == null)
+        {
+            return false;
+        }
+
+        submission.Grade = grade;
+
+        return true;
     }
 
     public Course? Delete(int id)
