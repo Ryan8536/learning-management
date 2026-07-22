@@ -1,4 +1,5 @@
 ﻿using CLI.LMS.Helpers;
+using Library.LMS.Services;
 
 namespace CLI.LMS;
 
@@ -6,6 +7,8 @@ internal class Program
 {
     static void Main(string[] args)
     {
+        AddStarterStudents();
+
         string? userChoice;
 
         do
@@ -50,6 +53,21 @@ internal class Program
 
         Console.WriteLine(
             "Closing the Learning Management System."
+        );
+    }
+
+    private static void AddStarterStudents()
+    {
+        StudentServiceProxy.Current.Add(
+            "Ryan Elharrada",
+            "4804137076",
+            "Junior"
+        );
+
+        StudentServiceProxy.Current.Add(
+            "Alex Smith",
+            "1000000001",
+            "Sophomore"
         );
     }
 }
