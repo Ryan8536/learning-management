@@ -76,7 +76,9 @@ public class CourseServiceProxy
 
         int newModuleId = course.Modules.Count == 0
             ? 1
-            : course.Modules.Max(module => module.Id) + 1;
+            : course.Modules.Max(
+                module => module.Id
+            ) + 1;
 
         Module newModule = new Module
         {
@@ -316,6 +318,66 @@ public class CourseServiceProxy
         }
 
         course.Roster.Add(student);
+    }
+
+    public Submission? AddSubmission(
+        int courseId,
+        int assignmentId,
+        int studentId,
+        string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return null;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return null;
+        }
+
+        bool studentIsEnrolled =
+            course.Roster.Any(
+                student => student.Id == studentId
+            );
+
+        if (!studentIsEnrolled)
+        {
+            return null;
+        }
+
+        Assignment? assignment =
+            course.Assignments.FirstOrDefault(
+                assignment =>
+                    assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return null;
+        }
+
+        int newSubmissionId =
+            assignment.Submissions.Count == 0
+            ? 1
+            : assignment.Submissions.Max(
+                submission => submission.Id
+            ) + 1;
+
+        Submission newSubmission = new Submission
+        {
+            Id = newSubmissionId,
+            StudentId = studentId,
+            AssignmentId = assignmentId,
+            Content = content,
+            SubmissionDate = DateTime.Now
+        };
+
+        assignment.Submissions.Add(newSubmission);
+
+        return newSubmission;
     }
 
     public Course? Delete(int id)

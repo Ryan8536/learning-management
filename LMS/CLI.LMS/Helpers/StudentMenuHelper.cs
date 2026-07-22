@@ -221,7 +221,8 @@ public class StudentMenuHelper
             Console.WriteLine("2. View Assignments");
             Console.WriteLine("3. View Other Students");
             Console.WriteLine("4. View Course Schedule");
-            Console.WriteLine("5. Return to Student Menu");
+            Console.WriteLine("5. Submit an Assignment");
+            Console.WriteLine("6. Return to Student Menu");
 
             userChoice = Console.ReadLine();
 
@@ -244,15 +245,22 @@ public class StudentMenuHelper
             {
                 DisplaySchedule(selectedCourse);
             }
-            else if (userChoice != "5")
+            else if (userChoice == "5")
+            {
+                SubmitAssignment(
+                    selectedCourse,
+                    selectedStudent
+                );
+            }
+            else if (userChoice != "6")
             {
                 Console.WriteLine(
                     "Invalid selection. " +
-                    "Please enter 1, 2, 3, 4, or 5."
+                    "Please enter 1, 2, 3, 4, 5, or 6."
                 );
             }
 
-        } while (userChoice != "5");
+        } while (userChoice != "6");
     }
 
     private void DisplayModules(
@@ -335,6 +343,115 @@ public class StudentMenuHelper
                 $"Due: {assignment.DueDate:MM/dd/yyyy}"
             );
         }
+    }
+
+    private void SubmitAssignment(
+        Course selectedCourse,
+        Student selectedStudent)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Submit an Assignment:");
+
+        if (selectedCourse.Assignments.Count == 0)
+        {
+            Console.WriteLine(
+                "This course has no assignments."
+            );
+
+            return;
+        }
+
+        foreach (
+            Assignment assignment
+            in selectedCourse.Assignments)
+        {
+            Console.WriteLine(
+                $"ID: {assignment.Id} | " +
+                $"Name: {assignment.Name} | " +
+                $"Due: {assignment.DueDate:MM/dd/yyyy}"
+            );
+        }
+
+        Console.WriteLine();
+        Console.Write(
+            "Enter the assignment ID: "
+        );
+
+        string? assignmentIdText =
+            Console.ReadLine();
+
+        bool idIsValid = int.TryParse(
+            assignmentIdText,
+            out int assignmentId
+        );
+
+        if (!idIsValid)
+        {
+            Console.WriteLine(
+                "The assignment ID must be a whole number."
+            );
+
+            return;
+        }
+
+        Assignment? selectedAssignment =
+            selectedCourse.Assignments.FirstOrDefault(
+                assignment =>
+                    assignment.Id == assignmentId
+            );
+
+        if (selectedAssignment == null)
+        {
+            Console.WriteLine(
+                "No assignment was found with that ID."
+            );
+
+            return;
+        }
+
+        Console.Write(
+            "Enter your submission content: "
+        );
+
+        string? submissionContent =
+            Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(
+            submissionContent))
+        {
+            Console.WriteLine(
+                "Submission content is required."
+            );
+
+            return;
+        }
+
+        Submission? newSubmission =
+            CourseServiceProxy.Current.AddSubmission(
+                selectedCourse.Id,
+                selectedAssignment.Id,
+                selectedStudent.Id,
+                submissionContent
+            );
+
+        if (newSubmission == null)
+        {
+            Console.WriteLine(
+                "The submission could not be added."
+            );
+
+            return;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine(
+            $"Submission {newSubmission.Id} was added."
+        );
+
+        Console.WriteLine(
+            $"Submitted: " +
+            $"{newSubmission.SubmissionDate:g}"
+        );
     }
 
     private void DisplayOtherStudents(
