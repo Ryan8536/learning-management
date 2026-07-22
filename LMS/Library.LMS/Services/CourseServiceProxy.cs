@@ -320,6 +320,32 @@ public class CourseServiceProxy
         course.Roster.Add(student);
     }
 
+    public bool UnenrollStudent(
+        int courseId,
+        int studentId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return false;
+        }
+
+        Student? student =
+            course.Roster.FirstOrDefault(
+                student => student.Id == studentId
+            );
+
+        if (student == null)
+        {
+            return false;
+        }
+
+        course.Roster.Remove(student);
+
+        return true;
+    }
+
     public Submission? AddSubmission(
         int courseId,
         int assignmentId,
