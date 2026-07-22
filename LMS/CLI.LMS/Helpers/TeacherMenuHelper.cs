@@ -190,7 +190,11 @@ public class TeacherMenuHelper
             );
 
             Console.WriteLine(
-                "2. Return to Teacher Menu"
+                "2. Unenroll a Student"
+            );
+
+            Console.WriteLine(
+                "3. Return to Teacher Menu"
             );
 
             userChoice = Console.ReadLine();
@@ -201,14 +205,83 @@ public class TeacherMenuHelper
                     selectedCourse
                 );
             }
-            else if (userChoice != "2")
+            else if (userChoice == "2")
+            {
+                UnenrollStudent(selectedCourse);
+            }
+            else if (userChoice != "3")
             {
                 Console.WriteLine(
-                    "Invalid selection. Please enter 1 or 2."
+                    "Invalid selection. Please enter 1, 2, or 3."
                 );
             }
 
-        } while (userChoice != "2");
+        } while (userChoice != "3");
+    }
+
+    private void UnenrollStudent(
+        Course selectedCourse)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Course Roster:");
+
+        if (selectedCourse.Roster.Count == 0)
+        {
+            Console.WriteLine(
+                "There are no students enrolled."
+            );
+
+            return;
+        }
+
+        foreach (Student student in selectedCourse.Roster)
+        {
+            Console.WriteLine(
+                $"ID: {student.Id} | " +
+                $"Name: {student.Name} | " +
+                $"Code: {student.Code}"
+            );
+        }
+
+        Console.WriteLine();
+        Console.Write(
+            "Enter the student ID to unenroll: "
+        );
+
+        string? studentIdText = Console.ReadLine();
+
+        bool idIsValid = int.TryParse(
+            studentIdText,
+            out int studentId
+        );
+
+        if (!idIsValid)
+        {
+            Console.WriteLine(
+                "The student ID must be a whole number."
+            );
+
+            return;
+        }
+
+        bool studentWasRemoved =
+            CourseServiceProxy.Current.UnenrollStudent(
+                selectedCourse.Id,
+                studentId
+            );
+
+        if (!studentWasRemoved)
+        {
+            Console.WriteLine(
+                "No enrolled student was found with that ID."
+            );
+
+            return;
+        }
+
+        Console.WriteLine(
+            "The student was unenrolled from the course."
+        );
     }
 
     private void ReviewAndGradeSubmissions(

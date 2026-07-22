@@ -222,7 +222,8 @@ public class StudentMenuHelper
             Console.WriteLine("3. View Other Students");
             Console.WriteLine("4. View Course Schedule");
             Console.WriteLine("5. Submit an Assignment");
-            Console.WriteLine("6. Return to Student Menu");
+            Console.WriteLine("6. Unenroll From This Course");
+            Console.WriteLine("7. Return to Student Menu");
 
             userChoice = Console.ReadLine();
 
@@ -252,15 +253,74 @@ public class StudentMenuHelper
                     selectedStudent
                 );
             }
-            else if (userChoice != "6")
+            else if (userChoice == "6")
+            {
+                bool wasUnenrolled =
+                    UnenrollFromCourse(
+                        selectedCourse,
+                        selectedStudent
+                    );
+
+                if (wasUnenrolled)
+                {
+                    return;
+                }
+            }
+            else if (userChoice != "7")
             {
                 Console.WriteLine(
                     "Invalid selection. " +
-                    "Please enter 1, 2, 3, 4, 5, or 6."
+                    "Please enter 1, 2, 3, 4, 5, 6, or 7."
                 );
             }
 
-        } while (userChoice != "6");
+        } while (userChoice != "7");
+    }
+
+    private bool UnenrollFromCourse(
+        Course selectedCourse,
+        Student selectedStudent)
+    {
+        Console.WriteLine();
+        Console.Write(
+            $"Unenroll from {selectedCourse.Name}? " +
+            "Enter Y to confirm: "
+        );
+
+        string? confirmation = Console.ReadLine();
+
+        if (!string.Equals(
+            confirmation,
+            "Y",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine(
+                "Unenrollment was cancelled."
+            );
+
+            return false;
+        }
+
+        bool studentWasRemoved =
+            CourseServiceProxy.Current.UnenrollStudent(
+                selectedCourse.Id,
+                selectedStudent.Id
+            );
+
+        if (!studentWasRemoved)
+        {
+            Console.WriteLine(
+                "The student could not be unenrolled."
+            );
+
+            return false;
+        }
+
+        Console.WriteLine(
+            "You were unenrolled from the course."
+        );
+
+        return true;
     }
 
     private void DisplayModules(
