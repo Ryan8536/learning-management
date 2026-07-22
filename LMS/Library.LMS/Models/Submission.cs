@@ -11,4 +11,6 @@ public class Submission
     public string? Content { get; set; }
 
     public DateTime SubmissionDate { get; set; }
+
+    public int? Grade { get; set; }
 }
