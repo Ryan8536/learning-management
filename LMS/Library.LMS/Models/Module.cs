@@ -4,10 +4,10 @@ public class Module
 {
     public int Id { get; set; }
 
-    public List<string> Content { get; set; }
+    public List<ModuleItem> Content { get; set; }
 
     public Module()
     {
-        Content = new List<string>();
+        Content = new List<ModuleItem>();
     }
 }
