@@ -11,14 +11,14 @@ public partial class CourseMenuPage : ContentPage
 
     private Course? currentCourse;
     private Module? selectedModule;
-    private string? selectedContent;
+    private ModuleItem? selectedContent;
     private Assignment? selectedAssignment;
     private Student? selectedStudent;
 
     private ObservableCollection<Student> displayedRoster;
     private ObservableCollection<Student> displayedStudents;
     private ObservableCollection<Module> displayedModules;
-    private ObservableCollection<string> displayedContent;
+    private ObservableCollection<ModuleItem> displayedContent;
     private ObservableCollection<Assignment> displayedAssignments;
 
     public CourseMenuPage()
@@ -35,7 +35,7 @@ public partial class CourseMenuPage : ContentPage
             new ObservableCollection<Module>();
 
         displayedContent =
-            new ObservableCollection<string>();
+            new ObservableCollection<ModuleItem>();
 
         displayedAssignments =
             new ObservableCollection<Assignment>();
@@ -53,6 +53,9 @@ public partial class CourseMenuPage : ContentPage
             displayedContent;
 
         AssignmentsCollectionView.ItemsSource =
+            displayedAssignments;
+
+        ModuleAssignmentCollectionView.ItemsSource =
             displayedAssignments;
     }
 
@@ -74,13 +77,13 @@ public partial class CourseMenuPage : ContentPage
         ModulesCollectionView.SelectedItem = null;
         ContentCollectionView.SelectedItem = null;
         AssignmentsCollectionView.SelectedItem = null;
+        ModuleAssignmentCollectionView.SelectedItem = null;
 
         StudentNameEntry.Text = "";
         StudentCodeEntry.Text = "";
         StudentClassificationEntry.Text = "";
 
-        ContentEntry.Text = "";
-
+        ClearModuleItemForm();
         ClearAssignmentForm();
 
         RefreshRoster();
@@ -187,11 +190,10 @@ public partial class CourseMenuPage : ContentPage
         SelectionChangedEventArgs e)
     {
         selectedModule =
-            ModulesCollectionView.SelectedItem as Module;
+            ModulesCollectionView.SelectedItem
+            as Module;
 
-        selectedContent = null;
-        ContentEntry.Text = "";
-
+        ClearModuleItemForm();
         RefreshContent();
     }
 
@@ -200,85 +202,267 @@ public partial class CourseMenuPage : ContentPage
         SelectionChangedEventArgs e)
     {
         selectedContent =
-            ContentCollectionView.SelectedItem as string;
+            ContentCollectionView.SelectedItem
+            as ModuleItem;
 
-        if (selectedContent != null)
+        ContentNameEntry.Text = "";
+        ContentDetailsEditor.Text = "";
+
+        if (selectedContent is ModulePage page)
         {
-            ContentEntry.Text = selectedContent;
+            ContentNameEntry.Text =
+                page.Name;
+
+            ContentDetailsEditor.Text =
+                page.Body;
+        }
+        else if (selectedContent is ModuleFile file)
+        {
+            ContentNameEntry.Text =
+                file.Name;
+
+            ContentDetailsEditor.Text =
+                file.FilePath;
         }
     }
 
-    private void AddContentClicked(
+    private async void AddPageClicked(
         object? sender,
         EventArgs e)
     {
         if (selectedModule == null)
         {
+            await DisplayAlertAsync(
+                "No Module Selected",
+                "Select a module first.",
+                "OK"
+            );
+
             return;
         }
 
-        CourseServiceProxy.Current.AddModuleContent(
+        if (string.IsNullOrWhiteSpace(
+            ContentNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Page Name",
+                "Enter a name for the page.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.AddModulePage(
             CourseId,
             selectedModule.Id,
-            ContentEntry.Text
+            ContentNameEntry.Text,
+            ContentDetailsEditor.Text
         );
 
-        ContentEntry.Text = "";
-        selectedContent = null;
+        ClearModuleItemForm();
+        RefreshContent();
+    }
+
+    private async void AddFileClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedModule == null)
+        {
+            await DisplayAlertAsync(
+                "No Module Selected",
+                "Select a module first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+            ContentNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing File Name",
+                "Enter a name for the file.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+            ContentDetailsEditor.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing File Path",
+                "Enter the path or location of the file.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.AddModuleFile(
+            CourseId,
+            selectedModule.Id,
+            ContentNameEntry.Text,
+            ContentDetailsEditor.Text
+        );
+
+        ClearModuleItemForm();
+        RefreshContent();
+    }
+
+    private async void AddAssignmentToModuleClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedModule == null)
+        {
+            await DisplayAlertAsync(
+                "No Module Selected",
+                "Select a module first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Assignment? assignment =
+            ModuleAssignmentCollectionView.SelectedItem
+            as Assignment;
+
+        if (assignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.AddAssignmentToModule(
+            CourseId,
+            selectedModule.Id,
+            assignment.Id
+        );
+
+        ModuleAssignmentCollectionView.SelectedItem =
+            null;
 
         RefreshContent();
     }
 
-    private void UpdateContentClicked(
+    private async void UpdateContentClicked(
         object? sender,
         EventArgs e)
     {
         if (selectedModule == null)
         {
+            await DisplayAlertAsync(
+                "No Module Selected",
+                "Select a module first.",
+                "OK"
+            );
+
             return;
         }
 
         if (selectedContent == null)
         {
+            await DisplayAlertAsync(
+                "No Module Item Selected",
+                "Select a page or file first.",
+                "OK"
+            );
+
             return;
         }
 
-        CourseServiceProxy.Current.UpdateModuleContent(
+        if (selectedContent is Assignment)
+        {
+            await DisplayAlertAsync(
+                "Assignment Selected",
+                "Edit assignments using the assignment section.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+            ContentNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Name",
+                "Enter a name for the module item.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.UpdateModuleItem(
             CourseId,
             selectedModule.Id,
             selectedContent,
-            ContentEntry.Text
+            ContentNameEntry.Text,
+            ContentDetailsEditor.Text
         );
 
-        ContentEntry.Text = "";
-        selectedContent = null;
-
+        ClearModuleItemForm();
         RefreshContent();
     }
 
-    private void RemoveContentClicked(
+    private async void RemoveContentClicked(
         object? sender,
         EventArgs e)
     {
         if (selectedModule == null)
         {
+            await DisplayAlertAsync(
+                "No Module Selected",
+                "Select a module first.",
+                "OK"
+            );
+
             return;
         }
 
         if (selectedContent == null)
         {
+            await DisplayAlertAsync(
+                "No Module Item Selected",
+                "Select a module item first.",
+                "OK"
+            );
+
             return;
         }
 
-        CourseServiceProxy.Current.RemoveModuleContent(
+        bool shouldRemove =
+            await DisplayAlertAsync(
+                "Remove Module Item",
+                "Remove the selected item from this module?",
+                "Remove",
+                "Cancel"
+            );
+
+        if (!shouldRemove)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.RemoveModuleItem(
             CourseId,
             selectedModule.Id,
             selectedContent
         );
 
-        ContentEntry.Text = "";
-        selectedContent = null;
-
+        ClearModuleItemForm();
         RefreshContent();
     }
 
@@ -384,6 +568,7 @@ public partial class CourseMenuPage : ContentPage
 
         ClearAssignmentSelection();
         RefreshAssignments();
+        RefreshContent();
     }
 
     private async void DeleteAssignmentClicked(
@@ -421,6 +606,7 @@ public partial class CourseMenuPage : ContentPage
 
         ClearAssignmentSelection();
         RefreshAssignments();
+        RefreshContent();
     }
 
     private void ClearAssignmentFormClicked(
@@ -444,10 +630,11 @@ public partial class CourseMenuPage : ContentPage
             return false;
         }
 
-        bool pointsAreValid = int.TryParse(
-            AssignmentPointsEntry.Text,
-            out int availablePoints
-        );
+        bool pointsAreValid =
+            int.TryParse(
+                AssignmentPointsEntry.Text,
+                out int availablePoints
+            );
 
         if (!pointsAreValid)
         {
@@ -460,13 +647,37 @@ public partial class CourseMenuPage : ContentPage
             return false;
         }
 
+        if (availablePoints < 0)
+        {
+            await DisplayAlertAsync(
+                "Invalid Points",
+                "Available points cannot be negative.",
+                "OK"
+            );
+
+            return false;
+        }
+
         return true;
+    }
+
+    private void ClearModuleItemForm()
+    {
+        selectedContent = null;
+
+        ContentCollectionView.SelectedItem =
+            null;
+
+        ContentNameEntry.Text = "";
+        ContentDetailsEditor.Text = "";
     }
 
     private void ClearAssignmentSelection()
     {
         selectedAssignment = null;
-        AssignmentsCollectionView.SelectedItem = null;
+
+        AssignmentsCollectionView.SelectedItem =
+            null;
 
         ClearAssignmentForm();
     }
@@ -476,7 +687,9 @@ public partial class CourseMenuPage : ContentPage
         AssignmentNameEntry.Text = "";
         AssignmentDescriptionEditor.Text = "";
         AssignmentPointsEntry.Text = "";
-        AssignmentDueDatePicker.Date = DateTime.Today;
+
+        AssignmentDueDatePicker.Date =
+            DateTime.Today;
     }
 
     private void RefreshRoster()
@@ -488,7 +701,9 @@ public partial class CourseMenuPage : ContentPage
             return;
         }
 
-        foreach (Student student in currentCourse.Roster)
+        foreach (
+            Student student
+            in currentCourse.Roster)
         {
             displayedRoster.Add(student);
         }
@@ -515,7 +730,9 @@ public partial class CourseMenuPage : ContentPage
             return;
         }
 
-        foreach (Module module in currentCourse.Modules)
+        foreach (
+            Module module
+            in currentCourse.Modules)
         {
             displayedModules.Add(module);
         }
@@ -525,16 +742,19 @@ public partial class CourseMenuPage : ContentPage
     {
         displayedContent.Clear();
 
-        ContentCollectionView.SelectedItem = null;
+        ContentCollectionView.SelectedItem =
+            null;
 
         if (selectedModule == null)
         {
             return;
         }
 
-        foreach (string content in selectedModule.Content)
+        foreach (
+            ModuleItem item
+            in selectedModule.Content)
         {
-            displayedContent.Add(content);
+            displayedContent.Add(item);
         }
     }
 
@@ -542,7 +762,11 @@ public partial class CourseMenuPage : ContentPage
     {
         displayedAssignments.Clear();
 
-        AssignmentsCollectionView.SelectedItem = null;
+        AssignmentsCollectionView.SelectedItem =
+            null;
+
+        ModuleAssignmentCollectionView.SelectedItem =
+            null;
 
         if (currentCourse == null)
         {

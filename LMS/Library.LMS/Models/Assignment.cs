@@ -1,11 +1,7 @@
 namespace Library.LMS.Models;
 
-public class Assignment
+public class Assignment : ModuleItem
 {
-    public int Id { get; set; }
-
-    public string? Name { get; set; }
-
     public string? Description { get; set; }
 
     public int AvailablePoints { get; set; }
@@ -13,6 +9,22 @@ public class Assignment
     public DateTime DueDate { get; set; }
 
     public List<Submission> Submissions { get; set; }
+
+    public override string ItemType
+    {
+        get
+        {
+            return "Assignment";
+        }
+    }
+
+    public override string DisplayText
+    {
+        get
+        {
+            return $"Assignment: {Name} - Due {DueDate:MM/dd/yyyy}";
+        }
+    }
 
     public Assignment()
     {

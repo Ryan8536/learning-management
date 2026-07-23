@@ -142,14 +142,11 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
-                        <VerticalStackLayout Padding="10">
-
-                            <Label
-                                Text="{Binding Id,
-                                       StringFormat='Module {0}'}"
-                                FontSize="20" />
-
-                        </VerticalStackLayout>
+                        <Label
+                            Text="{Binding Id,
+                                   StringFormat='Module {0}'}"
+                            Padding="10"
+                            FontSize="20" />
 
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
@@ -160,13 +157,14 @@
                 Text="Add Module"
                 Clicked="AddModuleClicked" />
 
-            <Entry
-                x:Name="ContentEntry"
-                Placeholder="Enter module content" />
+            <Label
+                Text="Selected Module Items"
+                FontSize="24"
+                Margin="0,20,0,0" />
 
             <CollectionView
                 x:Name="ContentCollectionView"
-                HeightRequest="130"
+                HeightRequest="200"
                 SelectionMode="Single"
                 SelectionChanged="ContentSelectionChanged">
 
@@ -174,7 +172,7 @@
                     <DataTemplate>
 
                         <Label
-                            Text="{Binding .}"
+                            Text="{Binding DisplayText}"
                             Padding="10"
                             FontSize="18" />
 
@@ -183,16 +181,70 @@
 
             </CollectionView>
 
-            <Button
-                Text="Add Content to Selected Module"
-                Clicked="AddContentClicked" />
+            <Entry
+                x:Name="ContentNameEntry"
+                Placeholder="Page or file name" />
+
+            <Editor
+                x:Name="ContentDetailsEditor"
+                Placeholder="Page text or file path"
+                HeightRequest="90" />
 
             <Button
-                Text="Update Selected Content"
+                Text="Add Page to Selected Module"
+                Clicked="AddPageClicked" />
+
+            <Button
+                Text="Add File to Selected Module"
+                Clicked="AddFileClicked" />
+
+            <Label
+                Text="Add Existing Assignment to Module"
+                FontSize="18"
+                Margin="0,10,0,0" />
+
+            <Label
+                Text="Select an assignment below."
+                FontSize="14" />
+
+            <CollectionView
+                x:Name="ModuleAssignmentCollectionView"
+                HeightRequest="150"
+                SelectionMode="Single">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding AvailablePoints,
+                                       StringFormat='Points: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Button
+                Text="Add Selected Assignment to Module"
+                Clicked="AddAssignmentToModuleClicked" />
+
+            <Button
+                Text="Update Selected Page or File"
                 Clicked="UpdateContentClicked" />
 
             <Button
-                Text="Remove Selected Content"
+                Text="Remove Selected Module Item"
                 Clicked="RemoveContentClicked" />
 
             <!-- Assignments -->

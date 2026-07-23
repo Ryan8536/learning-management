@@ -76,9 +76,7 @@ public class CourseServiceProxy
 
         int newModuleId = course.Modules.Count == 0
             ? 1
-            : course.Modules.Max(
-                module => module.Id
-            ) + 1;
+            : course.Modules.Max(module => module.Id) + 1;
 
         Module newModule = new Module
         {
@@ -88,84 +86,33 @@ public class CourseServiceProxy
         course.Modules.Add(newModule);
     }
 
-    public void AddModuleContent(
-        int courseId,
-        int moduleId,
-        string? content)
+    private Module? GetModule(
+        Course course,
+        int moduleId)
     {
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return;
-        }
-
-        Course? course = GetById(courseId);
-
-        if (course == null)
-        {
-            return;
-        }
-
-        Module? module = course.Modules.FirstOrDefault(
+        return course.Modules.FirstOrDefault(
             module => module.Id == moduleId
         );
-
-        if (module == null)
-        {
-            return;
-        }
-
-        module.Content.Add(content);
     }
 
-    public void UpdateModuleContent(
-        int courseId,
-        int moduleId,
-        string? oldContent,
-        string? newContent)
+    private int GetNextModuleItemId(
+        Module module)
     {
-        if (string.IsNullOrWhiteSpace(oldContent))
+        if (module.Content.Count == 0)
         {
-            return;
+            return 1;
         }
 
-        if (string.IsNullOrWhiteSpace(newContent))
-        {
-            return;
-        }
-
-        Course? course = GetById(courseId);
-
-        if (course == null)
-        {
-            return;
-        }
-
-        Module? module = course.Modules.FirstOrDefault(
-            module => module.Id == moduleId
-        );
-
-        if (module == null)
-        {
-            return;
-        }
-
-        int contentIndex =
-            module.Content.IndexOf(oldContent);
-
-        if (contentIndex == -1)
-        {
-            return;
-        }
-
-        module.Content[contentIndex] = newContent;
+        return module.Content.Max(item => item.Id) + 1;
     }
 
-    public void RemoveModuleContent(
+    public void AddModulePage(
         int courseId,
         int moduleId,
-        string? content)
+        string? name,
+        string? body)
     {
-        if (string.IsNullOrWhiteSpace(content))
+        if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
@@ -177,16 +124,183 @@ public class CourseServiceProxy
             return;
         }
 
-        Module? module = course.Modules.FirstOrDefault(
-            module => module.Id == moduleId
-        );
+        Module? module = GetModule(course, moduleId);
 
         if (module == null)
         {
             return;
         }
 
-        module.Content.Remove(content);
+        ModulePage page = new ModulePage
+        {
+            Id = GetNextModuleItemId(module),
+            Name = name,
+            Body = body
+        };
+
+        module.Content.Add(page);
+    }
+
+    public void AddModuleFile(
+        int courseId,
+        int moduleId,
+        string? name,
+        string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Module? module = GetModule(course, moduleId);
+
+        if (module == null)
+        {
+            return;
+        }
+
+        ModuleFile file = new ModuleFile
+        {
+            Id = GetNextModuleItemId(module),
+            Name = name,
+            FilePath = filePath
+        };
+
+        module.Content.Add(file);
+    }
+
+    public void AddAssignmentToModule(
+        int courseId,
+        int moduleId,
+        int assignmentId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Module? module = GetModule(course, moduleId);
+
+        if (module == null)
+        {
+            return;
+        }
+
+        Assignment? assignment =
+            course.Assignments.FirstOrDefault(
+                assignment => assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return;
+        }
+
+        bool assignmentAlreadyExists =
+            module.Content.Any(
+                item => item == assignment
+            );
+
+        if (assignmentAlreadyExists)
+        {
+            return;
+        }
+
+        module.Content.Add(assignment);
+    }
+
+    public void UpdateModuleItem(
+        int courseId,
+        int moduleId,
+        ModuleItem? item,
+        string? name,
+        string? details)
+    {
+        if (item == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Module? module = GetModule(course, moduleId);
+
+        if (module == null)
+        {
+            return;
+        }
+
+        if (!module.Content.Contains(item))
+        {
+            return;
+        }
+
+        if (item is ModulePage page)
+        {
+            page.Name = name;
+            page.Body = details;
+        }
+        else if (item is ModuleFile file)
+        {
+            if (string.IsNullOrWhiteSpace(details))
+            {
+                return;
+            }
+
+            file.Name = name;
+            file.FilePath = details;
+        }
+    }
+
+    public void RemoveModuleItem(
+        int courseId,
+        int moduleId,
+        ModuleItem? item)
+    {
+        if (item == null)
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        Module? module = GetModule(course, moduleId);
+
+        if (module == null)
+        {
+            return;
+        }
+
+        module.Content.Remove(item);
     }
 
     public void AddAssignment(
@@ -249,8 +363,7 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment =>
-                    assignment.Id == assignmentId
+                assignment => assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -277,13 +390,17 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment =>
-                    assignment.Id == assignmentId
+                assignment => assignment.Id == assignmentId
             );
 
         if (assignment == null)
         {
             return;
+        }
+
+        foreach (Module module in course.Modules)
+        {
+            module.Content.Remove(assignment);
         }
 
         assignment.Submissions.Clear();
@@ -376,8 +493,7 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment =>
-                    assignment.Id == assignmentId
+                assignment => assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -422,8 +538,7 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment =>
-                    assignment.Id == assignmentId
+                assignment => assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -439,8 +554,7 @@ public class CourseServiceProxy
 
         Submission? submission =
             assignment.Submissions.FirstOrDefault(
-                submission =>
-                    submission.Id == submissionId
+                submission => submission.Id == submissionId
             );
 
         if (submission == null)
