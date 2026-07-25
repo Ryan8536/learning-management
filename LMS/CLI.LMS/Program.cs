@@ -82,7 +82,10 @@ internal class Program
         {
             Name = "Programming",
             Code = "COP4870",
-            Description = "Full-stack application development"
+            Semester = "Fall 2026",
+            Section = "001",
+            Description =
+                "Full-stack application development"
         };
 
         CourseServiceProxy.Current.Add(
@@ -105,11 +108,22 @@ internal class Program
         };
 
         programmingModule.Content.Add(
-            "Introduction to C#"
+            new ModulePage
+            {
+                Id = 1,
+                Name = "Introduction",
+                Body = "Introduction to C#"
+            }
         );
 
         programmingModule.Content.Add(
-            "Models, services, and user interfaces"
+            new ModulePage
+            {
+                Id = 2,
+                Name = "Application Structure",
+                Body =
+                    "Models, services, and user interfaces"
+            }
         );
 
         programmingCourse.Modules.Add(
@@ -131,11 +145,18 @@ internal class Program
             programmingAssignment
         );
 
+        programmingModule.Content.Add(
+            programmingAssignment
+        );
+
         Course circuitsCourse = new Course
         {
             Name = "Circuits",
             Code = "EEL3003",
-            Description = "Electrical circuit analysis"
+            Semester = "Fall 2026",
+            Section = "001",
+            Description =
+                "Electrical circuit analysis"
         };
 
         CourseServiceProxy.Current.Add(
@@ -153,11 +174,21 @@ internal class Program
         };
 
         circuitsModule.Content.Add(
-            "First-order circuits"
+            new ModulePage
+            {
+                Id = 1,
+                Name = "First-Order Circuits",
+                Body = "First-order circuits"
+            }
         );
 
         circuitsModule.Content.Add(
-            "Second-order circuits"
+            new ModulePage
+            {
+                Id = 2,
+                Name = "Second-Order Circuits",
+                Body = "Second-order circuits"
+            }
         );
 
         circuitsCourse.Modules.Add(
@@ -176,6 +207,10 @@ internal class Program
             };
 
         circuitsCourse.Assignments.Add(
+            circuitsAssignment
+        );
+
+        circuitsModule.Content.Add(
             circuitsAssignment
         );
     }

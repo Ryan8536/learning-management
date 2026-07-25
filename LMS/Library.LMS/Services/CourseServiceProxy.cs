@@ -1028,66 +1028,52 @@ public Course? CopyCourse(int courseId)
     }
 
     public bool GradeSubmission(
-        int courseId,
-        int assignmentId,
-        int submissionId,
-        int grade)
+    int courseId,
+    int assignmentId,
+    int submissionId,
+    double grade,
+    string? feedback)
+{
+    Course? course = GetById(courseId);
+
+    if (course == null)
     {
-        Course? course = GetById(courseId);
-
-        if (course == null)
-        {
-            return false;
-        }
-
-        Assignment? assignment =
-            course.Assignments.FirstOrDefault(
-                assignment =>
-                    assignment.Id
-                    == assignmentId
-            );
-
-        if (assignment == null)
-        {
-            return false;
-        }
-
-        if (
-            grade < 0
-            ||
-            grade > assignment.AvailablePoints
-        )
-        {
-            return false;
-        }
-
-        Submission? submission =
-            assignment.Submissions
-                .FirstOrDefault(
-                    submission =>
-                        submission.Id
-                        == submissionId
-                );
-
-        if (submission == null)
-        {
-            return false;
-        }
-
-        submission.Grade = grade;
-
-        return true;
+        return false;
     }
 
-    public Course? Delete(int id)
+    Assignment? assignment =
+        course.Assignments.FirstOrDefault(
+            assignment =>
+                assignment.Id == assignmentId
+        );
+
+    if (assignment == null)
     {
-        Course? course = GetById(id);
-
-        if (course != null)
-        {
-            Courses.Remove(course);
-        }
-
-        return course;
+        return false;
     }
-}
+
+    if (
+        grade < 0
+        ||
+        grade > assignment.AvailablePoints
+    )
+    {
+        return false;
+    }
+
+    Submission? submission =
+        assignment.Submissions.FirstOrDefault(
+            submission =>
+                submission.Id == submissionId
+        );
+
+    if (submission == null)
+    {
+        return false;
+    }
+
+    submission.Grade = grade;
+    submission.Feedback = feedback;
+
+    return true;
+}}

@@ -99,8 +99,13 @@ public class StudentMenuHelper
             );
 
             Console.WriteLine();
-            Console.WriteLine("1. Select an Enrolled Course");
-            Console.WriteLine("2. Return to Main Menu");
+            Console.WriteLine(
+                "1. Select an Enrolled Course"
+            );
+
+            Console.WriteLine(
+                "2. Return to Main Menu"
+            );
 
             userChoice = Console.ReadLine();
 
@@ -144,7 +149,9 @@ public class StudentMenuHelper
             return;
         }
 
-        foreach (Course course in enrolledCourses)
+        foreach (
+            Course course
+            in enrolledCourses)
         {
             Console.WriteLine(
                 $"ID: {course.Id} | " +
@@ -217,13 +224,33 @@ public class StudentMenuHelper
             );
 
             Console.WriteLine();
-            Console.WriteLine("1. View Modules and Content");
-            Console.WriteLine("2. View Assignments");
-            Console.WriteLine("3. View Other Students");
-            Console.WriteLine("4. View Course Schedule");
-            Console.WriteLine("5. Submit an Assignment");
-            Console.WriteLine("6. Unenroll From This Course");
-            Console.WriteLine("7. Return to Student Menu");
+            Console.WriteLine(
+                "1. View Modules and Content"
+            );
+
+            Console.WriteLine(
+                "2. View Assignments"
+            );
+
+            Console.WriteLine(
+                "3. View Other Students"
+            );
+
+            Console.WriteLine(
+                "4. View Course Schedule"
+            );
+
+            Console.WriteLine(
+                "5. Submit an Assignment"
+            );
+
+            Console.WriteLine(
+                "6. Unenroll From This Course"
+            );
+
+            Console.WriteLine(
+                "7. Return to Student Menu"
+            );
 
             userChoice = Console.ReadLine();
 
@@ -338,7 +365,9 @@ public class StudentMenuHelper
             return;
         }
 
-        foreach (Module module in selectedCourse.Modules)
+        foreach (
+            Module module
+            in selectedCourse.Modules)
         {
             Console.WriteLine();
             Console.WriteLine(
@@ -354,10 +383,12 @@ public class StudentMenuHelper
                 continue;
             }
 
-            foreach (string content in module.Content)
+            foreach (
+                ModuleItem item
+                in module.Content)
             {
                 Console.WriteLine(
-                    $"- {content}"
+                    $"- {item.DisplayText}"
                 );
             }
         }
@@ -383,6 +414,7 @@ public class StudentMenuHelper
             in selectedCourse.Assignments)
         {
             Console.WriteLine();
+
             Console.WriteLine(
                 $"ID: {assignment.Id}"
             );
@@ -538,7 +570,9 @@ public class StudentMenuHelper
             return;
         }
 
-        foreach (Student student in otherStudents)
+        foreach (
+            Student student
+            in otherStudents)
         {
             Console.WriteLine(
                 $"ID: {student.Id} | " +

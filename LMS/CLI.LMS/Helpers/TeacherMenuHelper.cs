@@ -80,6 +80,12 @@ public class TeacherMenuHelper
         Console.Write("Course code: ");
         string? code = Console.ReadLine();
 
+        Console.Write("Course semester: ");
+        string? semester = Console.ReadLine();
+
+        Console.Write("Course section: ");
+        string? section = Console.ReadLine();
+
         Console.Write("Course description: ");
         string? description = Console.ReadLine();
 
@@ -101,10 +107,21 @@ public class TeacherMenuHelper
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(semester))
+        {
+            Console.WriteLine(
+                "A course semester is required."
+            );
+
+            return;
+        }
+
         Course newCourse = new Course
         {
             Name = name,
             Code = code,
+            Semester = semester,
+            Section = section,
             Description = description
         };
 
@@ -234,7 +251,9 @@ public class TeacherMenuHelper
             return;
         }
 
-        foreach (Student student in selectedCourse.Roster)
+        foreach (
+            Student student
+            in selectedCourse.Roster)
         {
             Console.WriteLine(
                 $"ID: {student.Id} | " +
@@ -399,36 +418,112 @@ public class TeacherMenuHelper
 
         Console.WriteLine();
         Console.WriteLine("Selected Submission:");
-        DisplaySubmission(selectedSubmission);
+
+        DisplaySubmission(
+            selectedSubmission,
+            selectedAssignment
+        );
 
         Console.WriteLine();
-        Console.Write(
-            $"Enter grade from 0 to " +
-            $"{selectedAssignment.AvailablePoints}: "
-        );
+        Console.WriteLine("Choose a grading method:");
+        Console.WriteLine("1. Grade using points");
+        Console.WriteLine("2. Grade using percentage");
 
-        string? gradeText = Console.ReadLine();
+        string? gradingMethod =
+            Console.ReadLine();
 
-        bool gradeIsValid = int.TryParse(
-            gradeText,
-            out int grade
-        );
+        double gradeInPoints;
 
-        if (!gradeIsValid)
+        if (gradingMethod == "1")
+        {
+            Console.Write(
+                $"Enter points from 0 to " +
+                $"{selectedAssignment.AvailablePoints}: "
+            );
+
+            string? pointsText =
+                Console.ReadLine();
+
+            bool pointsAreValid =
+                double.TryParse(
+                    pointsText,
+                    out gradeInPoints
+                );
+
+            if (!pointsAreValid)
+            {
+                Console.WriteLine(
+                    "The grade must be a number."
+                );
+
+                return;
+            }
+        }
+        else if (gradingMethod == "2")
+        {
+            Console.Write(
+                "Enter percentage from 0 to 100: "
+            );
+
+            string? percentageText =
+                Console.ReadLine();
+
+            bool percentageIsValid =
+                double.TryParse(
+                    percentageText,
+                    out double percentage
+                );
+
+            if (!percentageIsValid)
+            {
+                Console.WriteLine(
+                    "The percentage must be a number."
+                );
+
+                return;
+            }
+
+            if (
+                percentage < 0
+                ||
+                percentage > 100
+            )
+            {
+                Console.WriteLine(
+                    "The percentage must be between 0 and 100."
+                );
+
+                return;
+            }
+
+            gradeInPoints =
+                selectedAssignment.AvailablePoints
+                * percentage
+                / 100;
+        }
+        else
         {
             Console.WriteLine(
-                "The grade must be a whole number."
+                "Invalid grading method."
             );
 
             return;
         }
+
+        Console.Write(
+            "Enter feedback for the student: "
+        );
+
+        string? feedback =
+            Console.ReadLine();
 
         bool gradeWasSaved =
             CourseServiceProxy.Current.GradeSubmission(
                 selectedCourse.Id,
                 selectedAssignment.Id,
                 selectedSubmission.Id,
-                grade
+                gradeInPoints,
+                feedback
             );
 
         if (!gradeWasSaved)
@@ -441,11 +536,26 @@ public class TeacherMenuHelper
             return;
         }
 
+        double percentageGrade = 0;
+
+        if (selectedAssignment.AvailablePoints > 0)
+        {
+            percentageGrade =
+                gradeInPoints
+                / selectedAssignment.AvailablePoints
+                * 100;
+        }
+
         Console.WriteLine();
         Console.WriteLine(
             $"Submission {selectedSubmission.Id} " +
-            $"was graded {selectedSubmission.Grade}/" +
-            $"{selectedAssignment.AvailablePoints}."
+            $"was graded {selectedSubmission.Grade:0.##}/" +
+            $"{selectedAssignment.AvailablePoints} " +
+            $"({percentageGrade:0.##}%)."
+        );
+
+        Console.WriteLine(
+            $"Feedback: {selectedSubmission.Feedback}"
         );
     }
 
@@ -459,13 +569,18 @@ public class TeacherMenuHelper
             Submission submission
             in selectedAssignment.Submissions)
         {
-            DisplaySubmission(submission);
+            DisplaySubmission(
+                submission,
+                selectedAssignment
+            );
+
             Console.WriteLine();
         }
     }
 
     private void DisplaySubmission(
-        Submission submission)
+        Submission submission,
+        Assignment assignment)
     {
         Student? student =
             StudentServiceProxy.Current.GetById(
@@ -475,10 +590,37 @@ public class TeacherMenuHelper
         string studentName =
             student?.Name ?? "Unknown Student";
 
-        string gradeDisplay =
-            submission.Grade.HasValue
-            ? submission.Grade.Value.ToString()
-            : "Not graded";
+        string gradeDisplay;
+
+        if (submission.Grade.HasValue)
+        {
+            double percentageGrade = 0;
+
+            if (assignment.AvailablePoints > 0)
+            {
+                percentageGrade =
+                    submission.Grade.Value
+                    / assignment.AvailablePoints
+                    * 100;
+            }
+
+            gradeDisplay =
+                $"{submission.Grade.Value:0.##}/" +
+                $"{assignment.AvailablePoints} " +
+                $"({percentageGrade:0.##}%)";
+        }
+        else
+        {
+            gradeDisplay =
+                "Not graded";
+        }
+
+        string feedbackDisplay =
+            string.IsNullOrWhiteSpace(
+                submission.Feedback
+            )
+            ? "No feedback"
+            : submission.Feedback;
 
         Console.WriteLine(
             $"Submission ID: {submission.Id}"
@@ -498,6 +640,10 @@ public class TeacherMenuHelper
 
         Console.WriteLine(
             $"Grade: {gradeDisplay}"
+        );
+
+        Console.WriteLine(
+            $"Feedback: {feedbackDisplay}"
         );
     }
 }
