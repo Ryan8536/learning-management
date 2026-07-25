@@ -7,7 +7,7 @@
 
     <Grid
         Padding="30"
-        RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto"
+        RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto,Auto"
         RowSpacing="20">
 
         <Label
@@ -98,6 +98,11 @@
 
         <Button
             Grid.Row="6"
+            Text="Copy Selected Course"
+            Clicked="CopyCourseClicked" />
+
+        <Button
+            Grid.Row="7"
             Text="Delete Course"
             Clicked="DeleteCourseClicked" />
 
