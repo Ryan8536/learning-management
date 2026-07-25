@@ -21,8 +21,10 @@ public partial class CourseMenuPage : ContentPage
     private ObservableCollection<Module> displayedModules;
     private ObservableCollection<ModuleItem> displayedContent;
     private ObservableCollection<Assignment> displayedAssignments;
+
     private ObservableCollection<AssignmentGroup>
         displayedAssignmentGroups;
+
     private ObservableCollection<Assignment>
         displayedGroupAssignments;
 
@@ -101,6 +103,7 @@ public partial class CourseMenuPage : ContentPage
         ModuleAssignmentCollectionView.SelectedItem = null;
         AssignmentGroupsCollectionView.SelectedItem = null;
         GroupAssignmentsCollectionView.SelectedItem = null;
+
         AvailableGroupAssignmentsCollectionView.SelectedItem =
             null;
 
@@ -108,6 +111,7 @@ public partial class CourseMenuPage : ContentPage
         StudentCodeEntry.Text = "";
         StudentClassificationEntry.Text = "";
         AssignmentGroupNameEntry.Text = "";
+        AssignmentGroupWeightEntry.Text = "";
 
         ClearModuleItemForm();
         ClearAssignmentForm();
@@ -665,11 +669,15 @@ public partial class CourseMenuPage : ContentPage
         if (selectedAssignmentGroup == null)
         {
             AssignmentGroupNameEntry.Text = "";
+            AssignmentGroupWeightEntry.Text = "";
         }
         else
         {
             AssignmentGroupNameEntry.Text =
                 selectedAssignmentGroup.Name;
+
+            AssignmentGroupWeightEntry.Text =
+                selectedAssignmentGroup.Weight.ToString();
         }
 
         RefreshGroupAssignments();
@@ -679,22 +687,40 @@ public partial class CourseMenuPage : ContentPage
         object? sender,
         EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(
-            AssignmentGroupNameEntry.Text))
-        {
-            await DisplayAlertAsync(
-                "Missing Group Name",
-                "Enter an assignment group name.",
-                "OK"
-            );
+        bool groupFormIsValid =
+            await ValidateAssignmentGroupForm();
 
+        if (!groupFormIsValid)
+        {
             return;
         }
+
+        double.TryParse(
+            AssignmentGroupWeightEntry.Text,
+            out double weight
+        );
 
         CourseServiceProxy.Current.AddAssignmentGroup(
             CourseId,
             AssignmentGroupNameEntry.Text
         );
+
+        AssignmentGroup? newGroup =
+            currentCourse?.AssignmentGroups
+                .OrderByDescending(
+                    group => group.Id
+                )
+                .FirstOrDefault();
+
+        if (newGroup != null)
+        {
+            CourseServiceProxy.Current
+                .UpdateAssignmentGroupWeight(
+                    CourseId,
+                    newGroup.Id,
+                    weight
+                );
+        }
 
         ClearAssignmentGroupSelection();
         RefreshAssignmentGroups();
@@ -715,23 +741,31 @@ public partial class CourseMenuPage : ContentPage
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(
-            AssignmentGroupNameEntry.Text))
-        {
-            await DisplayAlertAsync(
-                "Missing Group Name",
-                "Enter an assignment group name.",
-                "OK"
-            );
+        bool groupFormIsValid =
+            await ValidateAssignmentGroupForm();
 
+        if (!groupFormIsValid)
+        {
             return;
         }
+
+        double.TryParse(
+            AssignmentGroupWeightEntry.Text,
+            out double weight
+        );
 
         CourseServiceProxy.Current.UpdateAssignmentGroup(
             CourseId,
             selectedAssignmentGroup.Id,
             AssignmentGroupNameEntry.Text
         );
+
+        CourseServiceProxy.Current
+            .UpdateAssignmentGroupWeight(
+                CourseId,
+                selectedAssignmentGroup.Id,
+                weight
+            );
 
         ClearAssignmentGroupSelection();
         RefreshAssignmentGroups();
@@ -908,6 +942,51 @@ public partial class CourseMenuPage : ContentPage
         return true;
     }
 
+    private async Task<bool> ValidateAssignmentGroupForm()
+    {
+        if (string.IsNullOrWhiteSpace(
+            AssignmentGroupNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Group Name",
+                "Enter an assignment group name.",
+                "OK"
+            );
+
+            return false;
+        }
+
+        bool weightIsValid =
+            double.TryParse(
+                AssignmentGroupWeightEntry.Text,
+                out double weight
+            );
+
+        if (!weightIsValid)
+        {
+            await DisplayAlertAsync(
+                "Invalid Weight",
+                "Enter a numeric assignment group weight.",
+                "OK"
+            );
+
+            return false;
+        }
+
+        if (weight < 0)
+        {
+            await DisplayAlertAsync(
+                "Invalid Weight",
+                "The assignment group weight cannot be negative.",
+                "OK"
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
     private void ClearModuleItemForm()
     {
         selectedContent = null;
@@ -953,6 +1032,7 @@ public partial class CourseMenuPage : ContentPage
             null;
 
         AssignmentGroupNameEntry.Text = "";
+        AssignmentGroupWeightEntry.Text = "";
     }
 
     private void RefreshRoster()

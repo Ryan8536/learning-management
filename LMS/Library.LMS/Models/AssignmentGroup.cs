@@ -6,10 +6,15 @@ public class AssignmentGroup
 
     public string? Name { get; set; }
 
+    public double Weight { get; set; }
+
     public List<Assignment> Assignments { get; set; }
 
     public AssignmentGroup()
     {
-        Assignments = new List<Assignment>();
+        Weight = 0;
+
+        Assignments =
+            new List<Assignment>();
     }
 }
