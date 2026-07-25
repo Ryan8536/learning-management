@@ -9,6 +9,7 @@ public class Course : INotifyPropertyChanged
     private string? name;
     private string? code;
     private string? description;
+    private string? semester;
 
     public int Id
     {
@@ -62,6 +63,20 @@ public class Course : INotifyPropertyChanged
         set
         {
             description = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public string? Semester
+    {
+        get
+        {
+            return semester;
+        }
+
+        set
+        {
+            semester = value;
             NotifyPropertyChanged();
         }
     }
