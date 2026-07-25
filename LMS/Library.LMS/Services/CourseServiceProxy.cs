@@ -51,169 +51,166 @@ public class CourseServiceProxy
         );
     }
 
-    public Course? CopyCourse(int courseId)
+public Course? CopyCourse(int courseId)
+{
+    Course? originalCourse =
+        GetById(courseId);
+
+    if (originalCourse == null)
     {
-        Course? originalCourse =
-            GetById(courseId);
+        return null;
+    }
 
-        if (originalCourse == null)
-        {
-            return null;
-        }
+    Course copiedCourse = new Course
+    {
+        Name = $"{originalCourse.Name} - Copy",
+        Code = originalCourse.Code,
+        Description = originalCourse.Description,
+        Semester = originalCourse.Semester,
+        Section = originalCourse.Section
+    };
 
-        Course copiedCourse = new Course
-        {
-            Name = $"{originalCourse.Name} - Copy",
-            Code = originalCourse.Code,
-            Description = originalCourse.Description,
-            Semester = originalCourse.Semester
-        };
+    Dictionary<int, Assignment>
+        copiedAssignmentsById =
+            new Dictionary<int, Assignment>();
 
-        Dictionary<int, Assignment>
-            copiedAssignmentsById =
-                new Dictionary<int, Assignment>();
-
-        foreach (
-            Assignment originalAssignment
-            in originalCourse.Assignments)
-        {
-            Assignment copiedAssignment =
-                new Assignment
-                {
-                    Id = originalAssignment.Id,
-                    Name = originalAssignment.Name,
-                    Description =
-                        originalAssignment.Description,
-                    AvailablePoints =
-                        originalAssignment.AvailablePoints,
-                    DueDate =
-                        originalAssignment.DueDate
-                };
-
-            copiedCourse.Assignments.Add(
-                copiedAssignment
-            );
-
-            copiedAssignmentsById.Add(
-                originalAssignment.Id,
-                copiedAssignment
-            );
-        }
-
-        foreach (
-            Module originalModule
-            in originalCourse.Modules)
-        {
-            Module copiedModule = new Module
+    foreach (
+        Assignment originalAssignment
+        in originalCourse.Assignments)
+    {
+        Assignment copiedAssignment =
+            new Assignment
             {
-                Id = originalModule.Id
+                Id = originalAssignment.Id,
+                Name = originalAssignment.Name,
+                Description =
+                    originalAssignment.Description,
+                AvailablePoints =
+                    originalAssignment.AvailablePoints,
+                DueDate =
+                    originalAssignment.DueDate
             };
 
-            foreach (
-                ModuleItem originalItem
-                in originalModule.Content)
-            {
-                if (
-                    originalItem
-                    is ModulePage originalPage
-                )
-                {
-                    ModulePage copiedPage =
-                        new ModulePage
-                        {
-                            Id = originalPage.Id,
-                            Name = originalPage.Name,
-                            Body = originalPage.Body
-                        };
+        copiedCourse.Assignments.Add(
+            copiedAssignment
+        );
 
-                    copiedModule.Content.Add(
-                        copiedPage
-                    );
-                }
-                else if (
-                    originalItem
-                    is ModuleFile originalFile
-                )
-                {
-                    ModuleFile copiedFile =
-                        new ModuleFile
-                        {
-                            Id = originalFile.Id,
-                            Name = originalFile.Name,
-                            FilePath =
-                                originalFile.FilePath
-                        };
+        copiedAssignmentsById.Add(
+            originalAssignment.Id,
+            copiedAssignment
+        );
+    }
 
-                    copiedModule.Content.Add(
-                        copiedFile
-                    );
-                }
-                else if (
-                    originalItem
-                    is Assignment originalAssignment
-                )
-                {
-                    if (
-                        copiedAssignmentsById
-                            .TryGetValue(
-                                originalAssignment.Id,
-                                out Assignment?
-                                    copiedAssignment
-                            )
-                    )
-                    {
-                        copiedModule.Content.Add(
-                            copiedAssignment
-                        );
-                    }
-                }
-            }
-
-            copiedCourse.Modules.Add(
-                copiedModule
-            );
-        }
+    foreach (
+        Module originalModule
+        in originalCourse.Modules)
+    {
+        Module copiedModule = new Module
+        {
+            Id = originalModule.Id
+        };
 
         foreach (
-            AssignmentGroup originalGroup
-            in originalCourse.AssignmentGroups)
+            ModuleItem originalItem
+            in originalModule.Content)
         {
-            AssignmentGroup copiedGroup =
-                new AssignmentGroup
-                {
-                    Id = originalGroup.Id,
-                    Name = originalGroup.Name,
-                    Weight = originalGroup.Weight
-                };
+            if (
+                originalItem
+                is ModulePage originalPage
+            )
+            {
+                ModulePage copiedPage =
+                    new ModulePage
+                    {
+                        Id = originalPage.Id,
+                        Name = originalPage.Name,
+                        Body = originalPage.Body
+                    };
 
-            foreach (
-                Assignment originalAssignment
-                in originalGroup.Assignments)
+                copiedModule.Content.Add(
+                    copiedPage
+                );
+            }
+            else if (
+                originalItem
+                is ModuleFile originalFile
+            )
+            {
+                ModuleFile copiedFile =
+                    new ModuleFile
+                    {
+                        Id = originalFile.Id,
+                        Name = originalFile.Name,
+                        FilePath =
+                            originalFile.FilePath
+                    };
+
+                copiedModule.Content.Add(
+                    copiedFile
+                );
+            }
+            else if (
+                originalItem
+                is Assignment originalAssignment
+            )
             {
                 if (
-                    copiedAssignmentsById
-                        .TryGetValue(
-                            originalAssignment.Id,
-                            out Assignment?
-                                copiedAssignment
-                        )
+                    copiedAssignmentsById.TryGetValue(
+                        originalAssignment.Id,
+                        out Assignment? copiedAssignment
+                    )
                 )
                 {
-                    copiedGroup.Assignments.Add(
+                    copiedModule.Content.Add(
                         copiedAssignment
                     );
                 }
             }
-
-            copiedCourse.AssignmentGroups.Add(
-                copiedGroup
-            );
         }
 
-        Add(copiedCourse);
-
-        return copiedCourse;
+        copiedCourse.Modules.Add(
+            copiedModule
+        );
     }
+
+    foreach (
+        AssignmentGroup originalGroup
+        in originalCourse.AssignmentGroups)
+    {
+        AssignmentGroup copiedGroup =
+            new AssignmentGroup
+            {
+                Id = originalGroup.Id,
+                Name = originalGroup.Name,
+                Weight = originalGroup.Weight
+            };
+
+        foreach (
+            Assignment originalAssignment
+            in originalGroup.Assignments)
+        {
+            if (
+                copiedAssignmentsById.TryGetValue(
+                    originalAssignment.Id,
+                    out Assignment? copiedAssignment
+                )
+            )
+            {
+                copiedGroup.Assignments.Add(
+                    copiedAssignment
+                );
+            }
+        }
+
+        copiedCourse.AssignmentGroups.Add(
+            copiedGroup
+        );
+    }
+
+    Add(copiedCourse);
+
+    return copiedCourse;
+}
 
     public void UpdateDescription(
         int id,
