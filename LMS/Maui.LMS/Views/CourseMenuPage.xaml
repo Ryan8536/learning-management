@@ -342,12 +342,12 @@
                 Margin="0,25,0,0" />
 
             <Label
-                Text="Select a group to edit it or manage its assignments."
+                Text="Select a group to edit its name, weight, or assignments."
                 FontSize="14" />
 
             <CollectionView
                 x:Name="AssignmentGroupsCollectionView"
-                HeightRequest="180"
+                HeightRequest="200"
                 SelectionMode="Single"
                 SelectionChanged="AssignmentGroupSelectionChanged">
 
@@ -364,6 +364,10 @@
                                 FontAttributes="Bold" />
 
                             <Label
+                                Text="{Binding Weight,
+                                       StringFormat='Weight: {0}%'}" />
+
+                            <Label
                                 Text="{Binding Assignments.Count,
                                        StringFormat='Assignments: {0}'}" />
 
@@ -377,6 +381,11 @@
             <Entry
                 x:Name="AssignmentGroupNameEntry"
                 Placeholder="Assignment group name" />
+
+            <Entry
+                x:Name="AssignmentGroupWeightEntry"
+                Placeholder="Assignment group weight (%)"
+                Keyboard="Numeric" />
 
             <Button
                 Text="Add Assignment Group"

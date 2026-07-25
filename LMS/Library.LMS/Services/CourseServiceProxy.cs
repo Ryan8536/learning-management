@@ -490,6 +490,138 @@ public class CourseServiceProxy
         group.Name = newName;
     }
 
+    public bool UpdateAssignmentGroupWeight(
+        int courseId,
+        int groupId,
+        double weight)
+    {
+        if (weight < 0)
+        {
+            return false;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return false;
+        }
+
+        AssignmentGroup? group =
+            course.AssignmentGroups.FirstOrDefault(
+                group => group.Id == groupId
+            );
+
+        if (group == null)
+        {
+            return false;
+        }
+
+        group.Weight = weight;
+
+        return true;
+    }
+
+    public double? CalculateCourseGrade(
+        int courseId,
+        int studentId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return null;
+        }
+
+        bool studentIsEnrolled =
+            course.Roster.Any(
+                student => student.Id == studentId
+            );
+
+        if (!studentIsEnrolled)
+        {
+            return null;
+        }
+
+        double weightedGradeTotal = 0;
+        double totalUsedWeight = 0;
+
+        foreach (
+            AssignmentGroup group
+            in course.AssignmentGroups)
+        {
+            if (group.Weight <= 0)
+            {
+                continue;
+            }
+
+            double earnedPoints = 0;
+            double availablePoints = 0;
+
+            foreach (
+                Assignment assignment
+                in group.Assignments)
+            {
+                Submission? gradedSubmission =
+                    assignment.Submissions
+                        .Where(
+                            submission =>
+                                submission.StudentId
+                                    == studentId
+                                &&
+                                submission.Grade.HasValue
+                        )
+                        .OrderByDescending(
+                            submission =>
+                                submission.SubmissionDate
+                        )
+                        .FirstOrDefault();
+
+                if (gradedSubmission == null)
+                {
+                    continue;
+                }
+
+                if (assignment.AvailablePoints <= 0)
+                {
+                    continue;
+                }
+
+                earnedPoints +=
+                    gradedSubmission.Grade
+                    ?? 0;
+
+                availablePoints +=
+                    assignment.AvailablePoints;
+            }
+
+            if (availablePoints == 0)
+            {
+                continue;
+            }
+
+            double groupGrade =
+                earnedPoints
+                / availablePoints
+                * 100;
+
+            weightedGradeTotal +=
+                groupGrade
+                * group.Weight;
+
+            totalUsedWeight +=
+                group.Weight;
+        }
+
+        if (totalUsedWeight == 0)
+        {
+            return null;
+        }
+
+        return weightedGradeTotal
+            / totalUsedWeight;
+    }
+
     public void DeleteAssignmentGroup(
         int courseId,
         int groupId)
