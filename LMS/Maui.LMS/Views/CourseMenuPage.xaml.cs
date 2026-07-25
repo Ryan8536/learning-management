@@ -14,12 +14,17 @@ public partial class CourseMenuPage : ContentPage
     private ModuleItem? selectedContent;
     private Assignment? selectedAssignment;
     private Student? selectedStudent;
+    private AssignmentGroup? selectedAssignmentGroup;
 
     private ObservableCollection<Student> displayedRoster;
     private ObservableCollection<Student> displayedStudents;
     private ObservableCollection<Module> displayedModules;
     private ObservableCollection<ModuleItem> displayedContent;
     private ObservableCollection<Assignment> displayedAssignments;
+    private ObservableCollection<AssignmentGroup>
+        displayedAssignmentGroups;
+    private ObservableCollection<Assignment>
+        displayedGroupAssignments;
 
     public CourseMenuPage()
     {
@@ -40,6 +45,12 @@ public partial class CourseMenuPage : ContentPage
         displayedAssignments =
             new ObservableCollection<Assignment>();
 
+        displayedAssignmentGroups =
+            new ObservableCollection<AssignmentGroup>();
+
+        displayedGroupAssignments =
+            new ObservableCollection<Assignment>();
+
         RosterCollectionView.ItemsSource =
             displayedRoster;
 
@@ -57,6 +68,15 @@ public partial class CourseMenuPage : ContentPage
 
         ModuleAssignmentCollectionView.ItemsSource =
             displayedAssignments;
+
+        AssignmentGroupsCollectionView.ItemsSource =
+            displayedAssignmentGroups;
+
+        GroupAssignmentsCollectionView.ItemsSource =
+            displayedGroupAssignments;
+
+        AvailableGroupAssignmentsCollectionView.ItemsSource =
+            displayedAssignments;
     }
 
     private void CourseMenuPageNavigatedTo(
@@ -72,16 +92,22 @@ public partial class CourseMenuPage : ContentPage
         selectedModule = null;
         selectedContent = null;
         selectedAssignment = null;
+        selectedAssignmentGroup = null;
 
         StudentsCollectionView.SelectedItem = null;
         ModulesCollectionView.SelectedItem = null;
         ContentCollectionView.SelectedItem = null;
         AssignmentsCollectionView.SelectedItem = null;
         ModuleAssignmentCollectionView.SelectedItem = null;
+        AssignmentGroupsCollectionView.SelectedItem = null;
+        GroupAssignmentsCollectionView.SelectedItem = null;
+        AvailableGroupAssignmentsCollectionView.SelectedItem =
+            null;
 
         StudentNameEntry.Text = "";
         StudentCodeEntry.Text = "";
         StudentClassificationEntry.Text = "";
+        AssignmentGroupNameEntry.Text = "";
 
         ClearModuleItemForm();
         ClearAssignmentForm();
@@ -91,6 +117,8 @@ public partial class CourseMenuPage : ContentPage
         RefreshModules();
         RefreshContent();
         RefreshAssignments();
+        RefreshAssignmentGroups();
+        RefreshGroupAssignments();
     }
 
     private void StudentSelectionChanged(
@@ -569,6 +597,8 @@ public partial class CourseMenuPage : ContentPage
         ClearAssignmentSelection();
         RefreshAssignments();
         RefreshContent();
+        RefreshAssignmentGroups();
+        RefreshGroupAssignments();
     }
 
     private async void DeleteAssignmentClicked(
@@ -607,6 +637,8 @@ public partial class CourseMenuPage : ContentPage
         ClearAssignmentSelection();
         RefreshAssignments();
         RefreshContent();
+        RefreshAssignmentGroups();
+        RefreshGroupAssignments();
     }
 
     private void ClearAssignmentFormClicked(
@@ -614,6 +646,221 @@ public partial class CourseMenuPage : ContentPage
         EventArgs e)
     {
         ClearAssignmentSelection();
+    }
+
+    private void AssignmentGroupSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedAssignmentGroup =
+            AssignmentGroupsCollectionView.SelectedItem
+            as AssignmentGroup;
+
+        GroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        AvailableGroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        if (selectedAssignmentGroup == null)
+        {
+            AssignmentGroupNameEntry.Text = "";
+        }
+        else
+        {
+            AssignmentGroupNameEntry.Text =
+                selectedAssignmentGroup.Name;
+        }
+
+        RefreshGroupAssignments();
+    }
+
+    private async void AddAssignmentGroupClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(
+            AssignmentGroupNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Group Name",
+                "Enter an assignment group name.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.AddAssignmentGroup(
+            CourseId,
+            AssignmentGroupNameEntry.Text
+        );
+
+        ClearAssignmentGroupSelection();
+        RefreshAssignmentGroups();
+    }
+
+    private async void UpdateAssignmentGroupClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignmentGroup == null)
+        {
+            await DisplayAlertAsync(
+                "No Group Selected",
+                "Select an assignment group first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(
+            AssignmentGroupNameEntry.Text))
+        {
+            await DisplayAlertAsync(
+                "Missing Group Name",
+                "Enter an assignment group name.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.UpdateAssignmentGroup(
+            CourseId,
+            selectedAssignmentGroup.Id,
+            AssignmentGroupNameEntry.Text
+        );
+
+        ClearAssignmentGroupSelection();
+        RefreshAssignmentGroups();
+    }
+
+    private async void DeleteAssignmentGroupClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignmentGroup == null)
+        {
+            await DisplayAlertAsync(
+                "No Group Selected",
+                "Select an assignment group first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        bool shouldDelete =
+            await DisplayAlertAsync(
+                "Delete Assignment Group",
+                "Delete the selected assignment group?",
+                "Delete",
+                "Cancel"
+            );
+
+        if (!shouldDelete)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.DeleteAssignmentGroup(
+            CourseId,
+            selectedAssignmentGroup.Id
+        );
+
+        ClearAssignmentGroupSelection();
+        RefreshAssignmentGroups();
+        RefreshGroupAssignments();
+    }
+
+    private async void AddAssignmentToGroupClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignmentGroup == null)
+        {
+            await DisplayAlertAsync(
+                "No Group Selected",
+                "Select an assignment group first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Assignment? assignment =
+            AvailableGroupAssignmentsCollectionView
+                .SelectedItem
+            as Assignment;
+
+        if (assignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current.AddAssignmentToGroup(
+            CourseId,
+            selectedAssignmentGroup.Id,
+            assignment.Id
+        );
+
+        AvailableGroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        RefreshAssignmentGroups();
+        RefreshGroupAssignments();
+    }
+
+    private async void RemoveAssignmentFromGroupClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignmentGroup == null)
+        {
+            await DisplayAlertAsync(
+                "No Group Selected",
+                "Select an assignment group first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Assignment? assignment =
+            GroupAssignmentsCollectionView.SelectedItem
+            as Assignment;
+
+        if (assignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment from the group first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        CourseServiceProxy.Current
+            .RemoveAssignmentFromGroup(
+                CourseId,
+                selectedAssignmentGroup.Id,
+                assignment.Id
+            );
+
+        GroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        RefreshAssignmentGroups();
+        RefreshGroupAssignments();
     }
 
     private async Task<bool> ValidateAssignmentForm()
@@ -692,6 +939,22 @@ public partial class CourseMenuPage : ContentPage
             DateTime.Today;
     }
 
+    private void ClearAssignmentGroupSelection()
+    {
+        selectedAssignmentGroup = null;
+
+        AssignmentGroupsCollectionView.SelectedItem =
+            null;
+
+        GroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        AvailableGroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        AssignmentGroupNameEntry.Text = "";
+    }
+
     private void RefreshRoster()
     {
         displayedRoster.Clear();
@@ -768,6 +1031,9 @@ public partial class CourseMenuPage : ContentPage
         ModuleAssignmentCollectionView.SelectedItem =
             null;
 
+        AvailableGroupAssignmentsCollectionView.SelectedItem =
+            null;
+
         if (currentCourse == null)
         {
             return;
@@ -778,6 +1044,43 @@ public partial class CourseMenuPage : ContentPage
             in currentCourse.Assignments)
         {
             displayedAssignments.Add(assignment);
+        }
+    }
+
+    private void RefreshAssignmentGroups()
+    {
+        displayedAssignmentGroups.Clear();
+
+        if (currentCourse == null)
+        {
+            return;
+        }
+
+        foreach (
+            AssignmentGroup group
+            in currentCourse.AssignmentGroups)
+        {
+            displayedAssignmentGroups.Add(group);
+        }
+    }
+
+    private void RefreshGroupAssignments()
+    {
+        displayedGroupAssignments.Clear();
+
+        GroupAssignmentsCollectionView.SelectedItem =
+            null;
+
+        if (selectedAssignmentGroup == null)
+        {
+            return;
+        }
+
+        foreach (
+            Assignment assignment
+            in selectedAssignmentGroup.Assignments)
+        {
+            displayedGroupAssignments.Add(assignment);
         }
     }
 
