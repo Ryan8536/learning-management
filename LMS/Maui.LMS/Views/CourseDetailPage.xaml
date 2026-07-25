@@ -22,6 +22,10 @@
             x:Name="CodeEntry"
             Placeholder="Course Code" />
 
+        <Entry
+            x:Name="SemesterEntry"
+            Placeholder="Semester, such as Fall 2026" />
+
         <Editor
             x:Name="DescriptionEditor"
             Placeholder="Course Description"
