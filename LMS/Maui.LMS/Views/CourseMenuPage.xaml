@@ -334,6 +334,140 @@
                 Text="Clear Assignment Form"
                 Clicked="ClearAssignmentFormClicked" />
 
+            <!-- Assignment Groups -->
+
+            <Label
+                Text="Assignment Groups"
+                FontSize="24"
+                Margin="0,25,0,0" />
+
+            <Label
+                Text="Select a group to edit it or manage its assignments."
+                FontSize="14" />
+
+            <CollectionView
+                x:Name="AssignmentGroupsCollectionView"
+                HeightRequest="180"
+                SelectionMode="Single"
+                SelectionChanged="AssignmentGroupSelectionChanged">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="20"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding Assignments.Count,
+                                       StringFormat='Assignments: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Entry
+                x:Name="AssignmentGroupNameEntry"
+                Placeholder="Assignment group name" />
+
+            <Button
+                Text="Add Assignment Group"
+                Clicked="AddAssignmentGroupClicked" />
+
+            <Button
+                Text="Update Selected Assignment Group"
+                Clicked="UpdateAssignmentGroupClicked" />
+
+            <Button
+                Text="Delete Selected Assignment Group"
+                Clicked="DeleteAssignmentGroupClicked" />
+
+            <Label
+                Text="Assignments in Selected Group"
+                FontSize="20"
+                Margin="0,15,0,0" />
+
+            <CollectionView
+                x:Name="GroupAssignmentsCollectionView"
+                HeightRequest="180"
+                SelectionMode="Single">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding AvailablePoints,
+                                       StringFormat='Points: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Button
+                Text="Remove Selected Assignment from Group"
+                Clicked="RemoveAssignmentFromGroupClicked" />
+
+            <Label
+                Text="Add Assignment to Selected Group"
+                FontSize="20"
+                Margin="0,15,0,0" />
+
+            <Label
+                Text="Select an assignment below."
+                FontSize="14" />
+
+            <CollectionView
+                x:Name="AvailableGroupAssignmentsCollectionView"
+                HeightRequest="180"
+                SelectionMode="Single">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding AvailablePoints,
+                                       StringFormat='Points: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Button
+                Text="Add Selected Assignment to Group"
+                Clicked="AddAssignmentToGroupClicked" />
+
             <Button
                 Text="Back to Teacher Menu"
                 Clicked="BackClicked" />

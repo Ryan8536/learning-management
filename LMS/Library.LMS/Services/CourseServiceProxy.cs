@@ -76,7 +76,9 @@ public class CourseServiceProxy
 
         int newModuleId = course.Modules.Count == 0
             ? 1
-            : course.Modules.Max(module => module.Id) + 1;
+            : course.Modules.Max(
+                module => module.Id
+            ) + 1;
 
         Module newModule = new Module
         {
@@ -103,7 +105,9 @@ public class CourseServiceProxy
             return 1;
         }
 
-        return module.Content.Max(item => item.Id) + 1;
+        return module.Content.Max(
+            item => item.Id
+        ) + 1;
     }
 
     public void AddModulePage(
@@ -124,7 +128,8 @@ public class CourseServiceProxy
             return;
         }
 
-        Module? module = GetModule(course, moduleId);
+        Module? module =
+            GetModule(course, moduleId);
 
         if (module == null)
         {
@@ -164,7 +169,8 @@ public class CourseServiceProxy
             return;
         }
 
-        Module? module = GetModule(course, moduleId);
+        Module? module =
+            GetModule(course, moduleId);
 
         if (module == null)
         {
@@ -193,7 +199,8 @@ public class CourseServiceProxy
             return;
         }
 
-        Module? module = GetModule(course, moduleId);
+        Module? module =
+            GetModule(course, moduleId);
 
         if (module == null)
         {
@@ -202,7 +209,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -247,7 +255,8 @@ public class CourseServiceProxy
             return;
         }
 
-        Module? module = GetModule(course, moduleId);
+        Module? module =
+            GetModule(course, moduleId);
 
         if (module == null)
         {
@@ -293,7 +302,8 @@ public class CourseServiceProxy
             return;
         }
 
-        Module? module = GetModule(course, moduleId);
+        Module? module =
+            GetModule(course, moduleId);
 
         if (module == null)
         {
@@ -363,7 +373,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -390,7 +401,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -403,8 +415,184 @@ public class CourseServiceProxy
             module.Content.Remove(assignment);
         }
 
+        foreach (
+            AssignmentGroup group
+            in course.AssignmentGroups)
+        {
+            group.Assignments.Remove(assignment);
+        }
+
         assignment.Submissions.Clear();
+
         course.Assignments.Remove(assignment);
+    }
+
+    public void AddAssignmentGroup(
+        int courseId,
+        string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        int newGroupId =
+            course.AssignmentGroups.Count == 0
+            ? 1
+            : course.AssignmentGroups.Max(
+                group => group.Id
+            ) + 1;
+
+        AssignmentGroup newGroup =
+            new AssignmentGroup
+            {
+                Id = newGroupId,
+                Name = name
+            };
+
+        course.AssignmentGroups.Add(newGroup);
+    }
+
+    public void UpdateAssignmentGroup(
+        int courseId,
+        int groupId,
+        string? newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName))
+        {
+            return;
+        }
+
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        AssignmentGroup? group =
+            course.AssignmentGroups.FirstOrDefault(
+                group => group.Id == groupId
+            );
+
+        if (group == null)
+        {
+            return;
+        }
+
+        group.Name = newName;
+    }
+
+    public void DeleteAssignmentGroup(
+        int courseId,
+        int groupId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        AssignmentGroup? group =
+            course.AssignmentGroups.FirstOrDefault(
+                group => group.Id == groupId
+            );
+
+        if (group == null)
+        {
+            return;
+        }
+
+        group.Assignments.Clear();
+
+        course.AssignmentGroups.Remove(group);
+    }
+
+    public void AddAssignmentToGroup(
+        int courseId,
+        int groupId,
+        int assignmentId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        AssignmentGroup? selectedGroup =
+            course.AssignmentGroups.FirstOrDefault(
+                group => group.Id == groupId
+            );
+
+        if (selectedGroup == null)
+        {
+            return;
+        }
+
+        Assignment? assignment =
+            course.Assignments.FirstOrDefault(
+                assignment =>
+                    assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return;
+        }
+
+        foreach (
+            AssignmentGroup group
+            in course.AssignmentGroups)
+        {
+            group.Assignments.Remove(assignment);
+        }
+
+        selectedGroup.Assignments.Add(assignment);
+    }
+
+    public void RemoveAssignmentFromGroup(
+        int courseId,
+        int groupId,
+        int assignmentId)
+    {
+        Course? course = GetById(courseId);
+
+        if (course == null)
+        {
+            return;
+        }
+
+        AssignmentGroup? group =
+            course.AssignmentGroups.FirstOrDefault(
+                group => group.Id == groupId
+            );
+
+        if (group == null)
+        {
+            return;
+        }
+
+        Assignment? assignment =
+            group.Assignments.FirstOrDefault(
+                assignment =>
+                    assignment.Id == assignmentId
+            );
+
+        if (assignment == null)
+        {
+            return;
+        }
+
+        group.Assignments.Remove(assignment);
     }
 
     public void EnrollStudent(
@@ -493,7 +681,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -538,7 +727,8 @@ public class CourseServiceProxy
 
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
-                assignment => assignment.Id == assignmentId
+                assignment =>
+                    assignment.Id == assignmentId
             );
 
         if (assignment == null)
@@ -554,7 +744,8 @@ public class CourseServiceProxy
 
         Submission? submission =
             assignment.Submissions.FirstOrDefault(
-                submission => submission.Id == submissionId
+                submission =>
+                    submission.Id == submissionId
             );
 
         if (submission == null)
