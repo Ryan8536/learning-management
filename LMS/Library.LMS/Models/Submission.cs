@@ -12,5 +12,7 @@ public class Submission
 
     public DateTime SubmissionDate { get; set; }
 
-    public int? Grade { get; set; }
+    public double? Grade { get; set; }
+
+    public string? Feedback { get; set; }
 }
