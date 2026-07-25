@@ -51,6 +51,170 @@ public class CourseServiceProxy
         );
     }
 
+    public Course? CopyCourse(int courseId)
+    {
+        Course? originalCourse =
+            GetById(courseId);
+
+        if (originalCourse == null)
+        {
+            return null;
+        }
+
+        Course copiedCourse = new Course
+        {
+            Name = $"{originalCourse.Name} - Copy",
+            Code = originalCourse.Code,
+            Description = originalCourse.Description,
+            Semester = originalCourse.Semester
+        };
+
+        Dictionary<int, Assignment>
+            copiedAssignmentsById =
+                new Dictionary<int, Assignment>();
+
+        foreach (
+            Assignment originalAssignment
+            in originalCourse.Assignments)
+        {
+            Assignment copiedAssignment =
+                new Assignment
+                {
+                    Id = originalAssignment.Id,
+                    Name = originalAssignment.Name,
+                    Description =
+                        originalAssignment.Description,
+                    AvailablePoints =
+                        originalAssignment.AvailablePoints,
+                    DueDate =
+                        originalAssignment.DueDate
+                };
+
+            copiedCourse.Assignments.Add(
+                copiedAssignment
+            );
+
+            copiedAssignmentsById.Add(
+                originalAssignment.Id,
+                copiedAssignment
+            );
+        }
+
+        foreach (
+            Module originalModule
+            in originalCourse.Modules)
+        {
+            Module copiedModule = new Module
+            {
+                Id = originalModule.Id
+            };
+
+            foreach (
+                ModuleItem originalItem
+                in originalModule.Content)
+            {
+                if (
+                    originalItem
+                    is ModulePage originalPage
+                )
+                {
+                    ModulePage copiedPage =
+                        new ModulePage
+                        {
+                            Id = originalPage.Id,
+                            Name = originalPage.Name,
+                            Body = originalPage.Body
+                        };
+
+                    copiedModule.Content.Add(
+                        copiedPage
+                    );
+                }
+                else if (
+                    originalItem
+                    is ModuleFile originalFile
+                )
+                {
+                    ModuleFile copiedFile =
+                        new ModuleFile
+                        {
+                            Id = originalFile.Id,
+                            Name = originalFile.Name,
+                            FilePath =
+                                originalFile.FilePath
+                        };
+
+                    copiedModule.Content.Add(
+                        copiedFile
+                    );
+                }
+                else if (
+                    originalItem
+                    is Assignment originalAssignment
+                )
+                {
+                    if (
+                        copiedAssignmentsById
+                            .TryGetValue(
+                                originalAssignment.Id,
+                                out Assignment?
+                                    copiedAssignment
+                            )
+                    )
+                    {
+                        copiedModule.Content.Add(
+                            copiedAssignment
+                        );
+                    }
+                }
+            }
+
+            copiedCourse.Modules.Add(
+                copiedModule
+            );
+        }
+
+        foreach (
+            AssignmentGroup originalGroup
+            in originalCourse.AssignmentGroups)
+        {
+            AssignmentGroup copiedGroup =
+                new AssignmentGroup
+                {
+                    Id = originalGroup.Id,
+                    Name = originalGroup.Name,
+                    Weight = originalGroup.Weight
+                };
+
+            foreach (
+                Assignment originalAssignment
+                in originalGroup.Assignments)
+            {
+                if (
+                    copiedAssignmentsById
+                        .TryGetValue(
+                            originalAssignment.Id,
+                            out Assignment?
+                                copiedAssignment
+                        )
+                )
+                {
+                    copiedGroup.Assignments.Add(
+                        copiedAssignment
+                    );
+                }
+            }
+
+            copiedCourse.AssignmentGroups.Add(
+                copiedGroup
+            );
+        }
+
+        Add(copiedCourse);
+
+        return copiedCourse;
+    }
+
     public void UpdateDescription(
         int id,
         string? newDescription)
@@ -384,7 +548,8 @@ public class CourseServiceProxy
 
         assignment.Name = name;
         assignment.Description = description;
-        assignment.AvailablePoints = availablePoints;
+        assignment.AvailablePoints =
+            availablePoints;
         assignment.DueDate = dueDate;
     }
 
@@ -410,7 +575,9 @@ public class CourseServiceProxy
             return;
         }
 
-        foreach (Module module in course.Modules)
+        foreach (
+            Module module
+            in course.Modules)
         {
             module.Content.Remove(assignment);
         }
@@ -419,7 +586,9 @@ public class CourseServiceProxy
             AssignmentGroup group
             in course.AssignmentGroups)
         {
-            group.Assignments.Remove(assignment);
+            group.Assignments.Remove(
+                assignment
+            );
         }
 
         assignment.Submissions.Clear();
@@ -535,7 +704,8 @@ public class CourseServiceProxy
 
         bool studentIsEnrolled =
             course.Roster.Any(
-                student => student.Id == studentId
+                student =>
+                    student.Id == studentId
             );
 
         if (!studentIsEnrolled)
@@ -582,7 +752,10 @@ public class CourseServiceProxy
                     continue;
                 }
 
-                if (assignment.AvailablePoints <= 0)
+                if (
+                    assignment.AvailablePoints
+                    <= 0
+                )
                 {
                     continue;
                 }
@@ -661,9 +834,11 @@ public class CourseServiceProxy
         }
 
         AssignmentGroup? selectedGroup =
-            course.AssignmentGroups.FirstOrDefault(
-                group => group.Id == groupId
-            );
+            course.AssignmentGroups
+                .FirstOrDefault(
+                    group =>
+                        group.Id == groupId
+                );
 
         if (selectedGroup == null)
         {
@@ -685,10 +860,14 @@ public class CourseServiceProxy
             AssignmentGroup group
             in course.AssignmentGroups)
         {
-            group.Assignments.Remove(assignment);
+            group.Assignments.Remove(
+                assignment
+            );
         }
 
-        selectedGroup.Assignments.Add(assignment);
+        selectedGroup.Assignments.Add(
+            assignment
+        );
     }
 
     public void RemoveAssignmentFromGroup(
@@ -746,7 +925,8 @@ public class CourseServiceProxy
         bool studentIsAlreadyEnrolled =
             course.Roster.Any(
                 enrolledStudent =>
-                    enrolledStudent.Id == student.Id
+                    enrolledStudent.Id
+                    == student.Id
             );
 
         if (studentIsAlreadyEnrolled)
@@ -770,7 +950,8 @@ public class CourseServiceProxy
 
         Student? student =
             course.Roster.FirstOrDefault(
-                student => student.Id == studentId
+                student =>
+                    student.Id == studentId
             );
 
         if (student == null)
@@ -803,7 +984,8 @@ public class CourseServiceProxy
 
         bool studentIsEnrolled =
             course.Roster.Any(
-                student => student.Id == studentId
+                student =>
+                    student.Id == studentId
             );
 
         if (!studentIsEnrolled)
@@ -814,7 +996,8 @@ public class CourseServiceProxy
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
                 assignment =>
-                    assignment.Id == assignmentId
+                    assignment.Id
+                    == assignmentId
             );
 
         if (assignment == null)
@@ -829,17 +1012,20 @@ public class CourseServiceProxy
                 submission => submission.Id
             ) + 1;
 
-        Submission newSubmission = new Submission
-        {
-            Id = newSubmissionId,
-            StudentId = studentId,
-            AssignmentId = assignmentId,
-            Content = content,
-            SubmissionDate = DateTime.Now,
-            Grade = null
-        };
+        Submission newSubmission =
+            new Submission
+            {
+                Id = newSubmissionId,
+                StudentId = studentId,
+                AssignmentId = assignmentId,
+                Content = content,
+                SubmissionDate = DateTime.Now,
+                Grade = null
+            };
 
-        assignment.Submissions.Add(newSubmission);
+        assignment.Submissions.Add(
+            newSubmission
+        );
 
         return newSubmission;
     }
@@ -860,7 +1046,8 @@ public class CourseServiceProxy
         Assignment? assignment =
             course.Assignments.FirstOrDefault(
                 assignment =>
-                    assignment.Id == assignmentId
+                    assignment.Id
+                    == assignmentId
             );
 
         if (assignment == null)
@@ -868,17 +1055,22 @@ public class CourseServiceProxy
             return false;
         }
 
-        if (grade < 0 ||
-            grade > assignment.AvailablePoints)
+        if (
+            grade < 0
+            ||
+            grade > assignment.AvailablePoints
+        )
         {
             return false;
         }
 
         Submission? submission =
-            assignment.Submissions.FirstOrDefault(
-                submission =>
-                    submission.Id == submissionId
-            );
+            assignment.Submissions
+                .FirstOrDefault(
+                    submission =>
+                        submission.Id
+                        == submissionId
+                );
 
         if (submission == null)
         {

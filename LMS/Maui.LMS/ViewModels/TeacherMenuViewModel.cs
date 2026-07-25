@@ -6,13 +6,15 @@ using Library.LMS.Services;
 
 namespace Maui.LMS.ViewModels;
 
-public class TeacherMenuViewModel : INotifyPropertyChanged
+public class TeacherMenuViewModel :
+    INotifyPropertyChanged
 {
     private ObservableCollection<Course> courses =
         new ObservableCollection<Course>();
 
-    private ObservableCollection<string> semesterOptions =
-        new ObservableCollection<string>();
+    private ObservableCollection<string>
+        semesterOptions =
+            new ObservableCollection<string>();
 
     private Course? selectedCourse;
     private string? selectedSemester;
@@ -31,7 +33,8 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
         }
     }
 
-    public ObservableCollection<string> SemesterOptions
+    public ObservableCollection<string>
+        SemesterOptions
     {
         get
         {
@@ -99,7 +102,9 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
                 )
                 .ThenBy(
                     semester =>
-                        GetSemesterTermOrder(semester)
+                        GetSemesterTermOrder(
+                            semester
+                        )
                 )
                 .ThenBy(
                     semester => semester
@@ -113,7 +118,9 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
             "All Semesters"
         );
 
-        foreach (string semester in semesters)
+        foreach (
+            string semester
+            in semesters)
         {
             SemesterOptions.Add(semester);
         }
@@ -142,6 +149,23 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
         RefreshDisplayedCourses();
     }
 
+    public Course? CopySelectedCourse()
+    {
+        if (SelectedCourse == null)
+        {
+            return null;
+        }
+
+        Course? copiedCourse =
+            CourseServiceProxy.Current.CopyCourse(
+                SelectedCourse.Id
+            );
+
+        RefreshCourses();
+
+        return copiedCourse;
+    }
+
     private void RefreshDisplayedCourses()
     {
         IEnumerable<Course> filteredCourses =
@@ -152,14 +176,15 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
                 SelectedSemester
             )
             &&
-            SelectedSemester != "All Semesters"
+            SelectedSemester
+                != "All Semesters"
         )
         {
             filteredCourses =
                 filteredCourses.Where(
                     course =>
                         course.Semester
-                            == SelectedSemester
+                        == SelectedSemester
                 );
         }
 
@@ -178,8 +203,7 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
                         )
                 )
                 .ThenBy(
-                    course =>
-                        course.Name
+                    course => course.Name
                 )
                 .ToList();
 
@@ -206,11 +230,16 @@ public class TeacherMenuViewModel : INotifyPropertyChanged
                     .RemoveEmptyEntries
             );
 
-        foreach (string part in semesterParts)
+        foreach (
+            string part
+            in semesterParts)
         {
-            if (int.TryParse(
-                part,
-                out int year))
+            if (
+                int.TryParse(
+                    part,
+                    out int year
+                )
+            )
             {
                 return year;
             }
