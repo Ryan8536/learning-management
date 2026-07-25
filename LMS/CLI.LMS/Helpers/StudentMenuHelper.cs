@@ -156,7 +156,9 @@ public class StudentMenuHelper
             Console.WriteLine(
                 $"ID: {course.Id} | " +
                 $"Name: {course.Name} | " +
-                $"Code: {course.Code}"
+                $"Code: {course.Code} | " +
+                $"Semester: {course.Semester} | " +
+                $"Section: {course.Section}"
             );
         }
 
@@ -245,11 +247,15 @@ public class StudentMenuHelper
             );
 
             Console.WriteLine(
-                "6. Unenroll From This Course"
+                "6. View Grades"
             );
 
             Console.WriteLine(
-                "7. Return to Student Menu"
+                "7. Unenroll From This Course"
+            );
+
+            Console.WriteLine(
+                "8. Return to Student Menu"
             );
 
             userChoice = Console.ReadLine();
@@ -282,6 +288,13 @@ public class StudentMenuHelper
             }
             else if (userChoice == "6")
             {
+                DisplayGrades(
+                    selectedCourse,
+                    selectedStudent
+                );
+            }
+            else if (userChoice == "7")
+            {
                 bool wasUnenrolled =
                     UnenrollFromCourse(
                         selectedCourse,
@@ -293,15 +306,15 @@ public class StudentMenuHelper
                     return;
                 }
             }
-            else if (userChoice != "7")
+            else if (userChoice != "8")
             {
                 Console.WriteLine(
                     "Invalid selection. " +
-                    "Please enter 1, 2, 3, 4, 5, 6, or 7."
+                    "Please enter 1, 2, 3, 4, 5, 6, 7, or 8."
                 );
             }
 
-        } while (userChoice != "7");
+        } while (userChoice != "8");
     }
 
     private bool UnenrollFromCourse(
@@ -544,6 +557,188 @@ public class StudentMenuHelper
             $"Submitted: " +
             $"{newSubmission.SubmissionDate:g}"
         );
+    }
+
+    private void DisplayGrades(
+        Course selectedCourse,
+        Student selectedStudent)
+    {
+        Console.WriteLine();
+        Console.WriteLine("--=========================--");
+        Console.WriteLine("Course Grades:");
+        Console.WriteLine("--=========================--");
+
+        Console.WriteLine(
+            $"Course: {selectedCourse.Name}"
+        );
+
+        Console.WriteLine(
+            $"Student: {selectedStudent.Name}"
+        );
+
+        if (selectedCourse.Assignments.Count == 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                "This course has no assignments."
+            );
+
+            return;
+        }
+
+        bool atLeastOneGradeWasFound = false;
+
+        foreach (
+            Assignment assignment
+            in selectedCourse.Assignments)
+        {
+            Submission? gradedSubmission =
+                assignment.Submissions
+                    .Where(
+                        submission =>
+                            submission.StudentId
+                                == selectedStudent.Id
+                            &&
+                            submission.Grade.HasValue
+                    )
+                    .OrderByDescending(
+                        submission =>
+                            submission.SubmissionDate
+                    )
+                    .FirstOrDefault();
+
+            Console.WriteLine();
+            Console.WriteLine(
+                $"Assignment: {assignment.Name}"
+            );
+
+            Console.WriteLine(
+                $"Available Points: " +
+                $"{assignment.AvailablePoints}"
+            );
+
+            if (gradedSubmission == null)
+            {
+                Console.WriteLine(
+                    "Grade: Not graded"
+                );
+
+                Console.WriteLine(
+                    "Feedback: No feedback"
+                );
+
+                continue;
+            }
+
+            atLeastOneGradeWasFound = true;
+
+            double earnedPoints =
+                gradedSubmission.Grade ?? 0;
+
+            double percentage = 0;
+
+            if (assignment.AvailablePoints > 0)
+            {
+                percentage =
+                    earnedPoints
+                    / assignment.AvailablePoints
+                    * 100;
+            }
+
+            Console.WriteLine(
+                $"Grade: {earnedPoints:0.##}/" +
+                $"{assignment.AvailablePoints} " +
+                $"({percentage:0.##}%)"
+            );
+
+            string feedbackDisplay =
+                string.IsNullOrWhiteSpace(
+                    gradedSubmission.Feedback
+                )
+                ? "No feedback"
+                : gradedSubmission.Feedback;
+
+            Console.WriteLine(
+                $"Feedback: {feedbackDisplay}"
+            );
+        }
+
+        Console.WriteLine();
+
+        double? courseGrade =
+            CourseServiceProxy.Current
+                .CalculateCourseGrade(
+                    selectedCourse.Id,
+                    selectedStudent.Id
+                );
+
+        if (courseGrade.HasValue)
+        {
+            Console.WriteLine(
+                $"Course Average: " +
+                $"{courseGrade.Value:0.##}%"
+            );
+        }
+        else if (atLeastOneGradeWasFound)
+        {
+            double totalEarnedPoints = 0;
+            double totalAvailablePoints = 0;
+
+            foreach (
+                Assignment assignment
+                in selectedCourse.Assignments)
+            {
+                Submission? gradedSubmission =
+                    assignment.Submissions
+                        .Where(
+                            submission =>
+                                submission.StudentId
+                                    == selectedStudent.Id
+                                &&
+                                submission.Grade.HasValue
+                        )
+                        .OrderByDescending(
+                            submission =>
+                                submission.SubmissionDate
+                        )
+                        .FirstOrDefault();
+
+                if (gradedSubmission == null)
+                {
+                    continue;
+                }
+
+                if (assignment.AvailablePoints <= 0)
+                {
+                    continue;
+                }
+
+                totalEarnedPoints +=
+                    gradedSubmission.Grade ?? 0;
+
+                totalAvailablePoints +=
+                    assignment.AvailablePoints;
+            }
+
+            if (totalAvailablePoints > 0)
+            {
+                double unweightedAverage =
+                    totalEarnedPoints
+                    / totalAvailablePoints
+                    * 100;
+
+                Console.WriteLine(
+                    $"Course Average: " +
+                    $"{unweightedAverage:0.##}%"
+                );
+            }
+        }
+        else
+        {
+            Console.WriteLine(
+                "Course Average: No graded work"
+            );
+        }
     }
 
     private void DisplayOtherStudents(
