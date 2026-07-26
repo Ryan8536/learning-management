@@ -111,6 +111,7 @@ public partial class StudentCourseDetailPage :
         }
 
         DisplayCourseInformation();
+        RefreshCourseGrade();
         RefreshAssignments();
         RefreshModuleContent();
         RefreshGrades();
@@ -144,6 +145,76 @@ public partial class StudentCourseDetailPage :
 
         DescriptionLabel.Text =
             selectedCourse.Description;
+    }
+
+    private void RefreshCourseGrade()
+    {
+        if (
+            selectedStudent == null
+            ||
+            selectedCourse == null
+        )
+        {
+            LetterGradeLabel.Text =
+                "Not Available";
+
+            CoursePercentageLabel.Text =
+                string.Empty;
+
+            return;
+        }
+
+        double? courseGrade =
+            CourseServiceProxy.Current.CalculateCourseGrade(
+                selectedCourse.Id,
+                selectedStudent.Id
+            );
+
+        if (!courseGrade.HasValue)
+        {
+            LetterGradeLabel.Text =
+                "Not Available";
+
+            CoursePercentageLabel.Text =
+                "No graded submissions";
+
+            return;
+        }
+
+        double percentage =
+            courseGrade.Value;
+
+        LetterGradeLabel.Text =
+            GetLetterGrade(percentage);
+
+        CoursePercentageLabel.Text =
+            $"{percentage:0.##}%";
+    }
+
+    private static string GetLetterGrade(
+        double percentage)
+    {
+        if (percentage >= 90)
+        {
+            return "A";
+        }
+
+        if (percentage >= 80)
+        {
+            return "B";
+        }
+
+        if (percentage >= 70)
+        {
+            return "C";
+        }
+
+        if (percentage >= 60)
+        {
+            return "D";
+        }
+
+        return "F";
     }
 
     private void RefreshAssignments()
@@ -378,6 +449,12 @@ public partial class StudentCourseDetailPage :
             string.Empty;
 
         DescriptionLabel.Text =
+            string.Empty;
+
+        LetterGradeLabel.Text =
+            "Not Available";
+
+        CoursePercentageLabel.Text =
             string.Empty;
 
         SelectedAssignmentLabel.Text =
