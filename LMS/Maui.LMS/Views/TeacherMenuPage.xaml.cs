@@ -104,4 +104,13 @@ public partial class TeacherMenuPage :
     {
         viewModel.DeleteSelectedCourse();
     }
+
+    private async void ReturnToMainMenuClicked(
+        object? sender,
+        EventArgs e)
+    {
+        await Shell.Current.GoToAsync(
+            "//MainPage"
+        );
+    }
 }
