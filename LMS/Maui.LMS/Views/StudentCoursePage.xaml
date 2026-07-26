@@ -5,25 +5,86 @@
              Title="Student Courses"
              NavigatedTo="StudentCoursePageNavigatedTo">
 
-    <VerticalStackLayout
+    <Grid
         Padding="30"
-        Spacing="20">
+        RowDefinitions="Auto,Auto,*,Auto"
+        RowSpacing="20">
 
         <Label
+            Grid.Row="0"
             Text="Student Courses"
             FontSize="32"
             HorizontalOptions="Center" />
 
         <Label
             x:Name="StudentNameLabel"
-            FontSize="24"
+            Grid.Row="1"
+            FontSize="22"
             HorizontalOptions="Center" />
 
-        <Label
-            Text="The enrolled course list will appear here."
-            FontSize="16"
-            HorizontalOptions="Center" />
+        <CollectionView
+            x:Name="CoursesCollectionView"
+            Grid.Row="2"
+            SelectionMode="Single"
+            SelectionChanged="CourseSelectionChanged">
 
-    </VerticalStackLayout>
+            <CollectionView.EmptyView>
+                <Label
+                    Text="This student is not enrolled in any courses."
+                    FontSize="17"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <VerticalStackLayout
+                        Padding="12"
+                        Spacing="4">
+
+                        <Label
+                            Text="{Binding Name}"
+                            FontSize="20"
+                            FontAttributes="Bold" />
+
+                        <Label
+                            Text="{Binding Code,
+                                   StringFormat='Course Code: {0}'}" />
+
+                        <Label
+                            Text="{Binding Semester,
+                                   StringFormat='Semester: {0}'}" />
+
+                        <Label
+                            Text="{Binding Section,
+                                   StringFormat='Section: {0}'}" />
+
+                        <Label
+                            Text="{Binding Description}" />
+
+                    </VerticalStackLayout>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <HorizontalStackLayout
+            Grid.Row="3"
+            Spacing="15"
+            HorizontalOptions="Center">
+
+            <Button
+                Text="Open Selected Course"
+                Clicked="OpenCourseClicked" />
+
+            <Button
+                Text="Select Different Student"
+                Clicked="SelectDifferentStudentClicked" />
+
+        </HorizontalStackLayout>
+
+    </Grid>
 
 </ContentPage>
