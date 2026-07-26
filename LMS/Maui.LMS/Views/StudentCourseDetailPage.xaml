@@ -46,6 +46,37 @@
                 x:Name="DescriptionLabel"
                 FontSize="17" />
 
+            <Border
+                Padding="20"
+                StrokeThickness="2">
+
+                <VerticalStackLayout
+                    Spacing="8"
+                    HorizontalOptions="Center">
+
+                    <Label
+                        Text="Current Course Grade"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center" />
+
+                    <Label
+                        x:Name="LetterGradeLabel"
+                        Text="Not Available"
+                        FontSize="42"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center" />
+
+                    <Label
+                        x:Name="CoursePercentageLabel"
+                        Text="No graded submissions"
+                        FontSize="20"
+                        HorizontalOptions="Center" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
             <BoxView
                 HeightRequest="1" />
 
