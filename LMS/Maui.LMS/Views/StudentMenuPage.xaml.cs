@@ -75,4 +75,13 @@ public partial class StudentMenuPage : ContentPage
             $"?studentId={selectedStudent.Id}"
         );
     }
+
+    private async void ReturnToMainMenuClicked(
+        object? sender,
+        EventArgs e)
+    {
+        await Shell.Current.GoToAsync(
+            "//MainPage"
+        );
+    }
 }

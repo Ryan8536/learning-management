@@ -7,7 +7,7 @@
 
     <Grid
         Padding="30"
-        RowDefinitions="Auto,Auto,*,Auto"
+        RowDefinitions="Auto,Auto,*,Auto,Auto"
         RowSpacing="20">
 
         <Label
@@ -59,6 +59,11 @@
             Grid.Row="3"
             Text="Continue as Selected Student"
             Clicked="ContinueClicked" />
+
+        <Button
+            Grid.Row="4"
+            Text="Return to Main Menu"
+            Clicked="ReturnToMainMenuClicked" />
 
     </Grid>
 
