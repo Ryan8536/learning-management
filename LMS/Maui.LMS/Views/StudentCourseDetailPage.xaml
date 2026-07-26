@@ -54,10 +54,15 @@
                 FontSize="24"
                 FontAttributes="Bold" />
 
+            <Label
+                Text="Select an assignment to submit a response."
+                FontSize="16" />
+
             <CollectionView
                 x:Name="AssignmentsCollectionView"
                 HeightRequest="220"
-                SelectionMode="None">
+                SelectionMode="Single"
+                SelectionChanged="AssignmentSelectionChanged">
 
                 <CollectionView.EmptyView>
                     <Label
@@ -94,6 +99,26 @@
                 </CollectionView.ItemTemplate>
 
             </CollectionView>
+
+            <Label
+                x:Name="SelectedAssignmentLabel"
+                Text="No assignment selected"
+                FontSize="18"
+                FontAttributes="Bold" />
+
+            <Editor
+                x:Name="ResponseEditor"
+                Placeholder="Enter your assignment response here..."
+                HeightRequest="150"
+                AutoSize="TextChanges" />
+
+            <Button
+                Text="Submit Response"
+                Clicked="SubmitResponseClicked" />
+
+            <Label
+                x:Name="SubmissionStatusLabel"
+                FontSize="16" />
 
             <BoxView
                 HeightRequest="1" />

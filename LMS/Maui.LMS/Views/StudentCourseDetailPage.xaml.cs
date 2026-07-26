@@ -17,6 +17,7 @@ public partial class StudentCourseDetailPage :
 
     private Student? selectedStudent;
     private Course? selectedCourse;
+    private Assignment? selectedAssignment;
 
     public string? StudentId { get; set; }
 
@@ -43,6 +44,20 @@ public partial class StudentCourseDetailPage :
         object? sender,
         NavigatedToEventArgs e)
     {
+        selectedAssignment = null;
+
+        AssignmentsCollectionView.SelectedItem =
+            null;
+
+        ResponseEditor.Text =
+            string.Empty;
+
+        SelectedAssignmentLabel.Text =
+            "No assignment selected";
+
+        SubmissionStatusLabel.Text =
+            string.Empty;
+
         if (
             !int.TryParse(
                 StudentId,
@@ -150,6 +165,112 @@ public partial class StudentCourseDetailPage :
                 .ToList();
     }
 
+    private void AssignmentSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedAssignment =
+            AssignmentsCollectionView.SelectedItem
+            as Assignment;
+
+        ResponseEditor.Text =
+            string.Empty;
+
+        SubmissionStatusLabel.Text =
+            string.Empty;
+
+        if (selectedAssignment == null)
+        {
+            SelectedAssignmentLabel.Text =
+                "No assignment selected";
+
+            return;
+        }
+
+        SelectedAssignmentLabel.Text =
+            $"Selected Assignment: " +
+            $"{selectedAssignment.Name}";
+    }
+
+    private async void SubmitResponseClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (
+            selectedStudent == null
+            ||
+            selectedCourse == null
+        )
+        {
+            await DisplayAlertAsync(
+                "Submission Failed",
+                "The student or course could not be found.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (selectedAssignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment before submitting.",
+                "OK"
+            );
+
+            return;
+        }
+
+        string response =
+            ResponseEditor.Text?.Trim()
+            ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(response))
+        {
+            await DisplayAlertAsync(
+                "Response Required",
+                "Enter a response before submitting.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Submission? submission =
+            CourseServiceProxy.Current.AddSubmission(
+                selectedCourse.Id,
+                selectedAssignment.Id,
+                selectedStudent.Id,
+                response
+            );
+
+        if (submission == null)
+        {
+            await DisplayAlertAsync(
+                "Submission Failed",
+                "The response could not be submitted.",
+                "OK"
+            );
+
+            return;
+        }
+
+        SubmissionStatusLabel.Text =
+            $"Submitted on " +
+            $"{submission.SubmissionDate:MM/dd/yyyy h:mm tt}";
+
+        ResponseEditor.Text =
+            string.Empty;
+
+        await DisplayAlertAsync(
+            "Response Submitted",
+            $"Your response to " +
+            $"{selectedAssignment.Name} was submitted.",
+            "OK"
+        );
+    }
+
     private void RefreshModuleContent()
     {
         displayedModuleContent.Clear();
@@ -237,14 +358,36 @@ public partial class StudentCourseDetailPage :
 
     private void DisplayMissingInformation()
     {
+        selectedStudent = null;
+        selectedCourse = null;
+        selectedAssignment = null;
+
         StudentNameLabel.Text =
             "Student or course not found";
 
-        CourseNameLabel.Text = string.Empty;
-        CourseCodeLabel.Text = string.Empty;
-        SemesterLabel.Text = string.Empty;
-        SectionLabel.Text = string.Empty;
-        DescriptionLabel.Text = string.Empty;
+        CourseNameLabel.Text =
+            string.Empty;
+
+        CourseCodeLabel.Text =
+            string.Empty;
+
+        SemesterLabel.Text =
+            string.Empty;
+
+        SectionLabel.Text =
+            string.Empty;
+
+        DescriptionLabel.Text =
+            string.Empty;
+
+        SelectedAssignmentLabel.Text =
+            "No assignment selected";
+
+        ResponseEditor.Text =
+            string.Empty;
+
+        SubmissionStatusLabel.Text =
+            string.Empty;
 
         AssignmentsCollectionView.ItemsSource =
             null;
