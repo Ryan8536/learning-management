@@ -39,55 +39,31 @@ public static class MauiProgram
                 "Sophomore"
             );
 
-        Course? programming =
-            CourseServiceProxy.Current.Courses
-                .FirstOrDefault(
-                    course =>
-                        course.Code == "COP3330"
-                );
-
-        if (programming == null)
-        {
-            programming = new Course
-            {
-                Id = GetNextCourseId(),
-                Name = "Programming",
-                Code = "COP3330",
-                Description =
-                    "Object-oriented programming",
-                Semester = "Fall 2026",
-                Section = "001"
-            };
-
-            CourseServiceProxy.Current.Courses.Add(
-                programming
+        Course programming =
+            GetOrCreateCourse(
+                "Programming",
+                "COP3330",
+                "Object-oriented programming",
+                "Fall 2026",
+                "001"
             );
-        }
 
-        Course? circuits =
-            CourseServiceProxy.Current.Courses
-                .FirstOrDefault(
-                    course =>
-                        course.Code == "EEL3003"
-                );
-
-        if (circuits == null)
-        {
-            circuits = new Course
-            {
-                Id = GetNextCourseId(),
-                Name = "Circuits",
-                Code = "EEL3003",
-                Description =
-                    "Introduction to circuit analysis",
-                Semester = "Fall 2026",
-                Section = "001"
-            };
-
-            CourseServiceProxy.Current.Courses.Add(
-                circuits
+        Course circuits =
+            GetOrCreateCourse(
+                "Circuits",
+                "EEL3003",
+                "Introduction to circuit analysis",
+                "Fall 2026",
+                "001"
             );
-        }
+
+        AddProgrammingAssignment(
+            programming
+        );
+
+        AddCircuitsAssignment(
+            circuits
+        );
 
         if (ryan != null)
         {
@@ -108,6 +84,11 @@ public static class MauiProgram
                 programming,
                 alex
             );
+
+            EnrollStudentDirectly(
+                circuits,
+                alex
+            );
         }
 
 #if DEBUG
@@ -115,6 +96,43 @@ public static class MauiProgram
 #endif
 
         return builder.Build();
+    }
+
+    private static Course GetOrCreateCourse(
+        string name,
+        string code,
+        string description,
+        string semester,
+        string section)
+    {
+        Course? existingCourse =
+            CourseServiceProxy.Current.Courses
+                .FirstOrDefault(
+                    course =>
+                        course.Code == code
+                );
+
+        if (existingCourse != null)
+        {
+            return existingCourse;
+        }
+
+        Course newCourse =
+            new Course
+            {
+                Id = GetNextCourseId(),
+                Name = name,
+                Code = code,
+                Description = description,
+                Semester = semester,
+                Section = section
+            };
+
+        CourseServiceProxy.Current.Courses.Add(
+            newCourse
+        );
+
+        return newCourse;
     }
 
     private static int GetNextCourseId()
@@ -129,6 +147,75 @@ public static class MauiProgram
 
         return courses.Max(
             course => course.Id
+        ) + 1;
+    }
+
+    private static void AddProgrammingAssignment(
+        Course course)
+    {
+        bool assignmentExists =
+            course.Assignments.Any(
+                assignment =>
+                    assignment.Name ==
+                    "Programming Exercise 1"
+            );
+
+        if (assignmentExists)
+        {
+            return;
+        }
+
+        course.Assignments.Add(
+            new Assignment
+            {
+                Id = GetNextAssignmentId(course),
+                Name = "Programming Exercise 1",
+                Description =
+                    "Describe how classes and objects work.",
+                AvailablePoints = 100,
+                DueDate = DateTime.Today.AddDays(7)
+            }
+        );
+    }
+
+    private static void AddCircuitsAssignment(
+        Course course)
+    {
+        bool assignmentExists =
+            course.Assignments.Any(
+                assignment =>
+                    assignment.Name ==
+                    "Circuit Analysis Response"
+            );
+
+        if (assignmentExists)
+        {
+            return;
+        }
+
+        course.Assignments.Add(
+            new Assignment
+            {
+                Id = GetNextAssignmentId(course),
+                Name = "Circuit Analysis Response",
+                Description =
+                    "Explain the difference between series and parallel circuits.",
+                AvailablePoints = 50,
+                DueDate = DateTime.Today.AddDays(10)
+            }
+        );
+    }
+
+    private static int GetNextAssignmentId(
+        Course course)
+    {
+        if (course.Assignments.Count == 0)
+        {
+            return 1;
+        }
+
+        return course.Assignments.Max(
+            assignment => assignment.Id
         ) + 1;
     }
 
