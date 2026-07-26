@@ -28,6 +28,11 @@
         ContentTemplate="{DataTemplate views:StudentCoursePage}" />
 
     <ShellContent
+        Title="Student Course Details"
+        Route="StudentCourseDetailPage"
+        ContentTemplate="{DataTemplate views:StudentCourseDetailPage}" />
+
+    <ShellContent
         Title="Course Details"
         Route="CourseDetailPage"
         ContentTemplate="{DataTemplate views:CourseDetailPage}" />
