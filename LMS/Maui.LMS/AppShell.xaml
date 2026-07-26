@@ -18,6 +18,16 @@
         ContentTemplate="{DataTemplate views:TeacherMenuPage}" />
 
     <ShellContent
+        Title="Student Menu"
+        Route="StudentMenuPage"
+        ContentTemplate="{DataTemplate views:StudentMenuPage}" />
+
+    <ShellContent
+        Title="Student Courses"
+        Route="StudentCoursePage"
+        ContentTemplate="{DataTemplate views:StudentCoursePage}" />
+
+    <ShellContent
         Title="Course Details"
         Route="CourseDetailPage"
         ContentTemplate="{DataTemplate views:CourseDetailPage}" />

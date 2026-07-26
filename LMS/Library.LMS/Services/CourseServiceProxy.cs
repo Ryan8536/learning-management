@@ -51,6 +51,16 @@ public class CourseServiceProxy
         );
     }
 
+    public void Delete(int courseId)
+   {
+    Course? courseToDelete = GetById(courseId);
+
+    if (courseToDelete != null)
+    {
+        Courses.Remove(courseToDelete);
+    }
+    }
+
 public Course? CopyCourse(int courseId)
 {
     Course? originalCourse =
