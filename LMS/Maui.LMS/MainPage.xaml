@@ -4,33 +4,36 @@
              x:Class="Maui.LMS.MainPage">
 
     <ScrollView>
-    <VerticalStackLayout
-        Padding="30"
-        Spacing="20"
-        VerticalOptions="Center">
 
-        <Label
-            Text="Learning Management System"
-            FontSize="32"
-            HorizontalOptions="Center" />
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="20"
+            VerticalOptions="Center">
 
-        <Label
-            Text="Select how you would like to use the application"
-            FontSize="18"
-            HorizontalOptions="Center" />
+            <Label
+                Text="Learning Management System"
+                FontSize="32"
+                HorizontalOptions="Center" />
 
-        <Button
-            Text="Teacher"
-            FontSize="20"
-            HeightRequest="60"
-            Clicked="TeacherClicked" />
+            <Label
+                Text="Select how you would like to use the application"
+                FontSize="18"
+                HorizontalOptions="Center" />
 
-        <Button
-            Text="Student"
-            FontSize="20"
-            HeightRequest="60" />
+            <Button
+                Text="Teacher"
+                FontSize="20"
+                HeightRequest="60"
+                Clicked="TeacherClicked" />
 
-    </VerticalStackLayout>
-  </ScrollView>
+            <Button
+                Text="Student"
+                FontSize="20"
+                HeightRequest="60"
+                Clicked="StudentClicked" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
 
 </ContentPage>

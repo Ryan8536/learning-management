@@ -7,8 +7,21 @@ public partial class MainPage : ContentPage
         InitializeComponent();
     }
 
-    private async void TeacherClicked(object sender, EventArgs e)
+    private async void TeacherClicked(
+        object? sender,
+        EventArgs e)
     {
-        await Shell.Current.GoToAsync("//TeacherMenuPage");
+        await Shell.Current.GoToAsync(
+            "//TeacherMenuPage"
+        );
+    }
+
+    private async void StudentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        await Shell.Current.GoToAsync(
+            "//StudentMenuPage"
+        );
     }
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.LMS.Views.StudentMenuPage"
+             Title="Select Student"
+             NavigatedTo="StudentMenuPageNavigatedTo">
+
+    <Grid
+        Padding="30"
+        RowDefinitions="Auto,Auto,*,Auto"
+        RowSpacing="20">
+
+        <Label
+            Grid.Row="0"
+            Text="Select a Student"
+            FontSize="32"
+            HorizontalOptions="Center" />
+
+        <Label
+            Grid.Row="1"
+            Text="Choose the student account you want to use."
+            FontSize="16"
+            HorizontalOptions="Center" />
+
+        <CollectionView
+            x:Name="StudentsCollectionView"
+            Grid.Row="2"
+            SelectionMode="Single"
+            SelectionChanged="StudentSelectionChanged">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <VerticalStackLayout
+                        Padding="12"
+                        Spacing="4">
+
+                        <Label
+                            Text="{Binding Name}"
+                            FontSize="20"
+                            FontAttributes="Bold" />
+
+                        <Label
+                            Text="{Binding Code,
+                                   StringFormat='Student Code: {0}'}" />
+
+                        <Label
+                            Text="{Binding Classification,
+                                   StringFormat='Classification: {0}'}" />
+
+                    </VerticalStackLayout>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+        <Button
+            Grid.Row="3"
+            Text="Continue as Selected Student"
+            Clicked="ContinueClicked" />
+
+    </Grid>
+
+</ContentPage>
