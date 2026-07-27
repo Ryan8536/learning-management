@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text;
 using Library.LMS.Models;
 using Library.LMS.Services;
 
@@ -305,6 +306,354 @@ public partial class CourseMenuPage : ContentPage
         "OK"
     );
 }
+
+
+    private async void ExportRosterClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (currentCourse == null)
+        {
+            await DisplayAlertAsync(
+                "Course Not Found",
+                "The course could not be found.",
+                "OK"
+            );
+
+            return;
+        }
+
+        StringBuilder csv =
+            new StringBuilder();
+
+        csv.AppendLine(
+            "Name,Code,Classification"
+        );
+
+        foreach (
+            Student student
+            in currentCourse.Roster
+                .OrderBy(student => student.Name))
+        {
+            csv.Append(
+                EscapeCsvValue(student.Name)
+            );
+
+            csv.Append(',');
+
+            csv.Append(
+                EscapeCsvValue(student.Code)
+            );
+
+            csv.Append(',');
+
+            csv.AppendLine(
+                EscapeCsvValue(
+                    student.Classification
+                )
+            );
+        }
+
+        string safeCourseName =
+            string.Concat(
+                (currentCourse.Code
+                    ?? currentCourse.Name
+                    ?? "course")
+                .Select(
+                    character =>
+                        Path.GetInvalidFileNameChars()
+                            .Contains(character)
+                            ? '_'
+                            : character
+                )
+            );
+
+        string exportPath =
+            Path.Combine(
+                FileSystem.CacheDirectory,
+                $"{safeCourseName}_roster.csv"
+            );
+
+        await File.WriteAllTextAsync(
+            exportPath,
+            csv.ToString()
+        );
+
+        await Share.Default.RequestAsync(
+            new ShareFileRequest
+            {
+                Title =
+                    $"Export {currentCourse.Name} Roster",
+
+                File =
+                    new ShareFile(exportPath)
+            }
+        );
+    }
+
+    private async void ImportRosterClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (currentCourse == null)
+        {
+            await DisplayAlertAsync(
+                "Course Not Found",
+                "The course could not be found.",
+                "OK"
+            );
+
+            return;
+        }
+
+        try
+        {
+            FileResult? selectedFile =
+                await FilePicker.Default.PickAsync(
+                    new PickOptions
+                    {
+                        PickerTitle =
+                            "Select a roster CSV file"
+                    }
+                );
+
+            if (selectedFile == null)
+            {
+                return;
+            }
+
+            int enrolledCount = 0;
+            int alreadyEnrolledCount = 0;
+            int invalidRowCount = 0;
+
+            using Stream fileStream =
+                await selectedFile.OpenReadAsync();
+
+            using StreamReader reader =
+                new StreamReader(fileStream);
+
+            bool firstNonEmptyRow = true;
+
+            while (
+                await reader.ReadLineAsync()
+                is string row)
+            {
+                if (string.IsNullOrWhiteSpace(row))
+                {
+                    continue;
+                }
+
+                List<string> values =
+                    ParseCsvRow(row);
+
+                if (firstNonEmptyRow)
+                {
+                    firstNonEmptyRow = false;
+
+                    bool rowIsHeader =
+                        values.Count >= 2
+                        &&
+                        string.Equals(
+                            values[0].Trim(),
+                            "Name",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        &&
+                        string.Equals(
+                            values[1].Trim(),
+                            "Code",
+                            StringComparison.OrdinalIgnoreCase
+                        );
+
+                    if (rowIsHeader)
+                    {
+                        continue;
+                    }
+                }
+
+                if (values.Count < 2)
+                {
+                    invalidRowCount++;
+                    continue;
+                }
+
+                string name =
+                    values[0].Trim();
+
+                string code =
+                    values[1].Trim();
+
+                string classification =
+                    values.Count >= 3
+                        ? values[2].Trim()
+                        : string.Empty;
+
+                if (
+                    string.IsNullOrWhiteSpace(name)
+                    ||
+                    string.IsNullOrWhiteSpace(code)
+                )
+                {
+                    invalidRowCount++;
+                    continue;
+                }
+
+                Student? student =
+                    StudentServiceProxy.Current.Students
+                        .FirstOrDefault(
+                            existingStudent =>
+                                string.Equals(
+                                    existingStudent.Code,
+                                    code,
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                        );
+
+                student ??=
+                    StudentServiceProxy.Current.Add(
+                        name,
+                        code,
+                        classification
+                    );
+
+                if (student == null)
+                {
+                    invalidRowCount++;
+                    continue;
+                }
+
+                bool isAlreadyEnrolled =
+                    currentCourse.Roster.Any(
+                        enrolledStudent =>
+                            enrolledStudent.Id
+                            == student.Id
+                    );
+
+                if (isAlreadyEnrolled)
+                {
+                    alreadyEnrolledCount++;
+                    continue;
+                }
+
+                CourseServiceProxy.Current.EnrollStudent(
+                    CourseId,
+                    student
+                );
+
+                enrolledCount++;
+            }
+
+            RefreshRoster();
+            RefreshStudents();
+
+            await DisplayAlertAsync(
+                "Roster Import Complete",
+                $"New enrollments: {enrolledCount}\n"
+                +
+                $"Already enrolled: {alreadyEnrolledCount}\n"
+                +
+                $"Invalid rows skipped: {invalidRowCount}",
+                "OK"
+            );
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync(
+                "Import Failed",
+                $"The roster could not be imported. {exception.Message}",
+                "OK"
+            );
+        }
+    }
+
+    private static string EscapeCsvValue(
+        string? value)
+    {
+        string safeValue =
+            value ?? string.Empty;
+
+        bool requiresQuotes =
+            safeValue.Contains(',')
+            ||
+            safeValue.Contains('"')
+            ||
+            safeValue.Contains('\n')
+            ||
+            safeValue.Contains('\r');
+
+        if (!requiresQuotes)
+        {
+            return safeValue;
+        }
+
+        return
+            $"\"{safeValue.Replace("\"", "\"\"")}\"";
+    }
+
+    private static List<string> ParseCsvRow(
+        string row)
+    {
+        List<string> values =
+            new List<string>();
+
+        StringBuilder currentValue =
+            new StringBuilder();
+
+        bool insideQuotes = false;
+
+        for (
+            int index = 0;
+            index < row.Length;
+            index++)
+        {
+            char character = row[index];
+
+            if (character == '"')
+            {
+                bool isEscapedQuote =
+                    insideQuotes
+                    &&
+                    index + 1 < row.Length
+                    &&
+                    row[index + 1] == '"';
+
+                if (isEscapedQuote)
+                {
+                    currentValue.Append('"');
+                    index++;
+                }
+                else
+                {
+                    insideQuotes =
+                        !insideQuotes;
+                }
+
+                continue;
+            }
+
+            if (
+                character == ','
+                &&
+                !insideQuotes
+            )
+            {
+                values.Add(
+                    currentValue.ToString()
+                );
+
+                currentValue.Clear();
+                continue;
+            }
+
+            currentValue.Append(character);
+        }
+
+        values.Add(
+            currentValue.ToString()
+        );
+
+        return values;
+    }
 
     private async void AddModuleClicked(
     object? sender,
