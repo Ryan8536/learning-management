@@ -34,7 +34,9 @@
 
             <CollectionView
                 x:Name="RosterCollectionView"
-                HeightRequest="160">
+                HeightRequest="160"
+                SelectionMode="Single"
+                SelectionChanged="RosterSelectionChanged">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -63,13 +65,17 @@
 
             </CollectionView>
 
+            <Button
+                Text="Remove Selected Student from Course"
+                Clicked="RemoveStudentFromRosterClicked" />
+
             <Label
-                Text="Existing Students"
+                Text="Available University Students"
                 FontSize="24"
                 Margin="0,20,0,0" />
 
             <Label
-                Text="Select an existing student to enroll."
+                Text="Select a university student to add to this course."
                 FontSize="14" />
 
             <CollectionView
