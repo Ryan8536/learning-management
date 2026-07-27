@@ -70,6 +70,23 @@
                 Clicked="RemoveStudentFromRosterClicked" />
 
             <Label
+                Text="Roster Import and Export"
+                FontSize="20"
+                Margin="0,15,0,0" />
+
+            <Label
+                Text="Export this roster as a CSV file or import students from a CSV file."
+                FontSize="14" />
+
+            <Button
+                Text="Export Course Roster"
+                Clicked="ExportRosterClicked" />
+
+            <Button
+                Text="Import Course Roster"
+                Clicked="ImportRosterClicked" />
+
+            <Label
                 Text="Available University Students"
                 FontSize="24"
                 Margin="0,20,0,0" />
