@@ -697,6 +697,69 @@ public void RemoveModuleItem(
         course.Assignments.Remove(assignment);
     }
 
+    public Assignment? CopyAssignment(
+    int sourceCourseId,
+    int assignmentId,
+    int destinationCourseId)
+{
+    if (sourceCourseId == destinationCourseId)
+    {
+        return null;
+    }
+
+    Course? sourceCourse =
+        GetById(sourceCourseId);
+
+    Course? destinationCourse =
+        GetById(destinationCourseId);
+
+    if (
+        sourceCourse == null
+        ||
+        destinationCourse == null
+    )
+    {
+        return null;
+    }
+
+    Assignment? originalAssignment =
+        sourceCourse.Assignments.FirstOrDefault(
+            assignment =>
+                assignment.Id == assignmentId
+        );
+
+    if (originalAssignment == null)
+    {
+        return null;
+    }
+
+    int newAssignmentId =
+        destinationCourse.Assignments.Count == 0
+            ? 1
+            : destinationCourse.Assignments.Max(
+                assignment => assignment.Id
+            ) + 1;
+
+    Assignment copiedAssignment =
+        new Assignment
+        {
+            Id = newAssignmentId,
+            Name = originalAssignment.Name,
+            Description =
+                originalAssignment.Description,
+            AvailablePoints =
+                originalAssignment.AvailablePoints,
+            DueDate =
+                originalAssignment.DueDate
+        };
+
+    destinationCourse.Assignments.Add(
+        copiedAssignment
+    );
+
+    return copiedAssignment;
+}
+
     public void AddAssignmentGroup(
         int courseId,
         string? name)
