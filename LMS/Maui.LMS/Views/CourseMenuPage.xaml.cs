@@ -14,6 +14,7 @@ public partial class CourseMenuPage : ContentPage
     private ModuleItem? selectedContent;
     private Assignment? selectedAssignment;
     private Student? selectedStudent;
+    private Student? selectedRosterStudent;
     private AssignmentGroup? selectedAssignmentGroup;
 
     private ObservableCollection<Student> displayedRoster;
@@ -95,7 +96,9 @@ public partial class CourseMenuPage : ContentPage
         selectedContent = null;
         selectedAssignment = null;
         selectedAssignmentGroup = null;
+        selectedRosterStudent = null;
 
+        RosterCollectionView.SelectedItem = null;
         StudentsCollectionView.SelectedItem = null;
         ModulesCollectionView.SelectedItem = null;
         ContentCollectionView.SelectedItem = null;
@@ -124,6 +127,15 @@ public partial class CourseMenuPage : ContentPage
         RefreshAssignmentGroups();
         RefreshGroupAssignments();
     }
+    
+    private void RosterSelectionChanged(
+    object? sender,
+    SelectionChangedEventArgs e)
+{
+    selectedRosterStudent =
+        RosterCollectionView.SelectedItem
+        as Student;
+}
 
     private void StudentSelectionChanged(
         object? sender,
@@ -183,30 +195,106 @@ public partial class CourseMenuPage : ContentPage
     }
 
     private async void EnrollExistingStudentClicked(
-        object? sender,
-        EventArgs e)
+    object? sender,
+    EventArgs e)
+{
+    if (selectedStudent == null)
     {
-        if (selectedStudent == null)
-        {
-            await DisplayAlertAsync(
-                "No Student Selected",
-                "Select an existing student first.",
-                "OK"
-            );
-
-            return;
-        }
-
-        CourseServiceProxy.Current.EnrollStudent(
-            CourseId,
-            selectedStudent
+        await DisplayAlertAsync(
+            "No Student Selected",
+            "Select an available university student first.",
+            "OK"
         );
 
-        selectedStudent = null;
-        StudentsCollectionView.SelectedItem = null;
-
-        RefreshRoster();
+        return;
     }
+
+    CourseServiceProxy.Current.EnrollStudent(
+        CourseId,
+        selectedStudent
+    );
+
+    selectedStudent = null;
+
+    StudentsCollectionView.SelectedItem =
+        null;
+
+    RefreshRoster();
+    RefreshStudents();
+}
+    
+    private async void RemoveStudentFromRosterClicked(
+    object? sender,
+    EventArgs e)
+{
+    if (currentCourse == null)
+    {
+        await DisplayAlertAsync(
+            "Course Not Found",
+            "The course could not be found.",
+            "OK"
+        );
+
+        return;
+    }
+
+    if (selectedRosterStudent == null)
+    {
+        await DisplayAlertAsync(
+            "No Student Selected",
+            "Select a student from the course roster first.",
+            "OK"
+        );
+
+        return;
+    }
+
+    Student studentToRemove =
+        selectedRosterStudent;
+
+    bool shouldRemove =
+        await DisplayAlertAsync(
+            "Remove Student",
+            $"Remove {studentToRemove.Name} from this course?",
+            "Remove",
+            "Cancel"
+        );
+
+    if (!shouldRemove)
+    {
+        return;
+    }
+
+    currentCourse.Roster.RemoveAll(
+        student =>
+            student.Id == studentToRemove.Id
+    );
+
+    foreach (
+        Assignment assignment
+        in currentCourse.Assignments)
+    {
+        assignment.Submissions.RemoveAll(
+            submission =>
+                submission.StudentId ==
+                studentToRemove.Id
+        );
+    }
+
+    selectedRosterStudent = null;
+
+    RosterCollectionView.SelectedItem =
+        null;
+
+    RefreshRoster();
+    RefreshStudents();
+
+    await DisplayAlertAsync(
+        "Student Removed",
+        $"{studentToRemove.Name} was removed from the course.",
+        "OK"
+    );
+}
 
     private void AddModuleClicked(
         object? sender,
@@ -1037,32 +1125,56 @@ public partial class CourseMenuPage : ContentPage
 
     private void RefreshRoster()
     {
-        displayedRoster.Clear();
+    displayedRoster.Clear();
 
-        if (currentCourse == null)
-        {
-            return;
-        }
+    RosterCollectionView.SelectedItem =
+        null;
 
-        foreach (
-            Student student
-            in currentCourse.Roster)
-        {
-            displayedRoster.Add(student);
-        }
+    selectedRosterStudent =
+        null;
+
+    if (currentCourse == null)
+    {
+        return;
     }
+
+    foreach (
+        Student student
+        in currentCourse.Roster
+            .OrderBy(student => student.Name))
+    {
+        displayedRoster.Add(student);
+    }
+}
 
     private void RefreshStudents()
-    {
-        displayedStudents.Clear();
+{
+    displayedStudents.Clear();
 
-        foreach (
-            Student student
-            in StudentServiceProxy.Current.Students)
-        {
-            displayedStudents.Add(student);
-        }
+    StudentsCollectionView.SelectedItem =
+        null;
+
+    selectedStudent =
+        null;
+
+    foreach (
+        Student student
+        in StudentServiceProxy.Current.Students
+            .Where(
+                student =>
+                    currentCourse == null
+                    ||
+                    !currentCourse.Roster.Any(
+                        enrolledStudent =>
+                            enrolledStudent.Id ==
+                            student.Id
+                    )
+            )
+            .OrderBy(student => student.Name))
+    {
+        displayedStudents.Add(student);
     }
+}
 
     private void RefreshModules()
     {
