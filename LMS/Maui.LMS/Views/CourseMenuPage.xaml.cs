@@ -113,6 +113,7 @@ public partial class CourseMenuPage : ContentPage
         StudentNameEntry.Text = "";
         StudentCodeEntry.Text = "";
         StudentClassificationEntry.Text = "";
+        ModuleNameEntry.Text = "";
         AssignmentGroupNameEntry.Text = "";
         AssignmentGroupWeightEntry.Text = "";
 
@@ -296,26 +297,146 @@ public partial class CourseMenuPage : ContentPage
     );
 }
 
-    private void AddModuleClicked(
-        object? sender,
-        EventArgs e)
+    private async void AddModuleClicked(
+    object? sender,
+    EventArgs e)
+{
+    if (string.IsNullOrWhiteSpace(
+        ModuleNameEntry.Text))
     {
-        CourseServiceProxy.Current.AddModule(CourseId);
+        await DisplayAlertAsync(
+            "Missing Module Name",
+            "Enter a module name.",
+            "OK"
+        );
 
-        RefreshModules();
+        return;
     }
+
+    CourseServiceProxy.Current.AddModule(
+        CourseId,
+        ModuleNameEntry.Text
+    );
+
+    ModuleNameEntry.Text =
+        string.Empty;
+
+    RefreshModules();
+}
 
     private void ModuleSelectionChanged(
-        object? sender,
-        SelectionChangedEventArgs e)
-    {
-        selectedModule =
-            ModulesCollectionView.SelectedItem
-            as Module;
+    object? sender,
+    SelectionChangedEventArgs e)
+{
+    selectedModule =
+        ModulesCollectionView.SelectedItem
+        as Module;
 
-        ClearModuleItemForm();
-        RefreshContent();
+    ModuleNameEntry.Text =
+        selectedModule?.Name
+        ?? string.Empty;
+
+    ClearModuleItemForm();
+    RefreshContent();
+}
+
+private async void UpdateModuleClicked(
+    object? sender,
+    EventArgs e)
+{
+    if (selectedModule == null)
+    {
+        await DisplayAlertAsync(
+            "No Module Selected",
+            "Select a module before updating it.",
+            "OK"
+        );
+
+        return;
     }
+
+    if (string.IsNullOrWhiteSpace(
+        ModuleNameEntry.Text))
+    {
+        await DisplayAlertAsync(
+            "Missing Module Name",
+            "Enter a module name.",
+            "OK"
+        );
+
+        return;
+    }
+
+    CourseServiceProxy.Current.UpdateModule(
+        CourseId,
+        selectedModule.Id,
+        ModuleNameEntry.Text
+    );
+
+    ModuleNameEntry.Text =
+        string.Empty;
+
+    selectedModule =
+        null;
+
+    ModulesCollectionView.SelectedItem =
+        null;
+
+    RefreshModules();
+    RefreshContent();
+}
+
+private async void DeleteModuleClicked(
+    object? sender,
+    EventArgs e)
+{
+    if (selectedModule == null)
+    {
+        await DisplayAlertAsync(
+            "No Module Selected",
+            "Select a module before deleting it.",
+            "OK"
+        );
+
+        return;
+    }
+
+    bool shouldDelete =
+        await DisplayAlertAsync(
+            "Delete Module",
+            "Delete the selected module and remove all of its content?",
+            "Delete",
+            "Cancel"
+        );
+
+    if (!shouldDelete)
+    {
+        return;
+    }
+
+    CourseServiceProxy.Current.DeleteModule(
+        CourseId,
+        selectedModule.Id
+    );
+
+    selectedModule =
+        null;
+
+    selectedContent =
+        null;
+
+    ModuleNameEntry.Text =
+        string.Empty;
+
+    ModulesCollectionView.SelectedItem =
+        null;
+
+    ContentCollectionView.SelectedItem =
+        null;
+
+    RefreshModules();
+    RefreshContent();
+}
 
     private void ContentSelectionChanged(
         object? sender,
