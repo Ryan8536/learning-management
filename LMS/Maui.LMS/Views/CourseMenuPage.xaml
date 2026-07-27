@@ -25,7 +25,7 @@
                 Text="{Binding Code}"
                 HorizontalOptions="Center" />
 
-            <!-- Course Roster -->
+            <!-- Students -->
 
             <Label
                 Text="Course Roster"
@@ -37,12 +37,6 @@
                 HeightRequest="160"
                 SelectionMode="Single"
                 SelectionChanged="RosterSelectionChanged">
-
-                <CollectionView.EmptyView>
-                    <Label
-                        Text="No students are enrolled in this course."
-                        FontSize="16" />
-                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -90,12 +84,6 @@
                 SelectionMode="Single"
                 SelectionChanged="StudentSelectionChanged">
 
-                <CollectionView.EmptyView>
-                    <Label
-                        Text="No additional university students are available."
-                        FontSize="16" />
-                </CollectionView.EmptyView>
-
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
@@ -111,10 +99,6 @@
                             <Label
                                 Text="{Binding Code,
                                        StringFormat='Student Code: {0}'}" />
-
-                            <Label
-                                Text="{Binding Classification,
-                                       StringFormat='Classification: {0}'}" />
 
                         </VerticalStackLayout>
 
@@ -315,12 +299,6 @@
                 SelectionMode="Single"
                 SelectionChanged="AssignmentSelectionChanged">
 
-                <CollectionView.EmptyView>
-                    <Label
-                        Text="No assignments are available."
-                        FontSize="16" />
-                </CollectionView.EmptyView>
-
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
@@ -370,8 +348,7 @@
                 Placeholder="Available points"
                 Keyboard="Numeric" />
 
-            <Label
-                Text="Due Date" />
+            <Label Text="Due Date" />
 
             <DatePicker
                 x:Name="AssignmentDueDatePicker" />
@@ -392,6 +369,56 @@
                 Text="Clear Assignment Form"
                 Clicked="ClearAssignmentFormClicked" />
 
+            <Label
+                Text="Copy Selected Assignment to Another Course"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Select an assignment above, then select a destination course."
+                FontSize="14" />
+
+            <CollectionView
+                x:Name="DestinationCoursesCollectionView"
+                HeightRequest="180"
+                SelectionMode="Single">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No other courses are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="18"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding Code}" />
+
+                            <Label
+                                Text="{Binding Semester,
+                                       StringFormat='Semester: {0}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Button
+                Text="Copy Selected Assignment"
+                Clicked="CopyAssignmentClicked" />
+
             <!-- Assignment Groups -->
 
             <Label
@@ -408,12 +435,6 @@
                 HeightRequest="200"
                 SelectionMode="Single"
                 SelectionChanged="AssignmentGroupSelectionChanged">
-
-                <CollectionView.EmptyView>
-                    <Label
-                        Text="No assignment groups are available."
-                        FontSize="16" />
-                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -473,12 +494,6 @@
                 HeightRequest="180"
                 SelectionMode="Single">
 
-                <CollectionView.EmptyView>
-                    <Label
-                        Text="The selected group has no assignments."
-                        FontSize="16" />
-                </CollectionView.EmptyView>
-
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
@@ -519,12 +534,6 @@
                 x:Name="AvailableGroupAssignmentsCollectionView"
                 HeightRequest="180"
                 SelectionMode="Single">
-
-                <CollectionView.EmptyView>
-                    <Label
-                        Text="No assignments are available."
-                        FontSize="16" />
-                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>

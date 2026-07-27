@@ -22,7 +22,8 @@ public partial class CourseMenuPage : ContentPage
     private ObservableCollection<Module> displayedModules;
     private ObservableCollection<ModuleItem> displayedContent;
     private ObservableCollection<Assignment> displayedAssignments;
-
+    private ObservableCollection<Course> displayedDestinationCourses;
+    
     private ObservableCollection<AssignmentGroup>
         displayedAssignmentGroups;
 
@@ -48,6 +49,9 @@ public partial class CourseMenuPage : ContentPage
         displayedAssignments =
             new ObservableCollection<Assignment>();
 
+        displayedDestinationCourses =
+            new ObservableCollection<Course>();
+
         displayedAssignmentGroups =
             new ObservableCollection<AssignmentGroup>();
 
@@ -71,6 +75,9 @@ public partial class CourseMenuPage : ContentPage
 
         ModuleAssignmentCollectionView.ItemsSource =
             displayedAssignments;
+
+        DestinationCoursesCollectionView.ItemsSource =
+            displayedDestinationCourses;
 
         AssignmentGroupsCollectionView.ItemsSource =
             displayedAssignmentGroups;
@@ -104,6 +111,7 @@ public partial class CourseMenuPage : ContentPage
         ContentCollectionView.SelectedItem = null;
         AssignmentsCollectionView.SelectedItem = null;
         ModuleAssignmentCollectionView.SelectedItem = null;
+        DestinationCoursesCollectionView.SelectedItem = null;
         AssignmentGroupsCollectionView.SelectedItem = null;
         GroupAssignmentsCollectionView.SelectedItem = null;
 
@@ -125,6 +133,7 @@ public partial class CourseMenuPage : ContentPage
         RefreshModules();
         RefreshContent();
         RefreshAssignments();
+        RefreshDestinationCourses();
         RefreshAssignmentGroups();
         RefreshGroupAssignments();
     }
@@ -861,6 +870,64 @@ private async void DeleteModuleClicked(
         ClearAssignmentSelection();
     }
 
+    private async void CopyAssignmentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedAssignment == null)
+        {
+            await DisplayAlertAsync(
+                "No Assignment Selected",
+                "Select an assignment to copy.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Course? destinationCourse =
+            DestinationCoursesCollectionView.SelectedItem
+            as Course;
+
+        if (destinationCourse == null)
+        {
+            await DisplayAlertAsync(
+                "No Destination Course Selected",
+                "Select the course that should receive the assignment.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Assignment? copiedAssignment =
+            CourseServiceProxy.Current.CopyAssignment(
+                CourseId,
+                selectedAssignment.Id,
+                destinationCourse.Id
+            );
+
+        if (copiedAssignment == null)
+        {
+            await DisplayAlertAsync(
+                "Copy Failed",
+                "The assignment could not be copied.",
+                "OK"
+            );
+
+            return;
+        }
+
+        DestinationCoursesCollectionView.SelectedItem =
+            null;
+
+        await DisplayAlertAsync(
+            "Assignment Copied",
+            $"{copiedAssignment.Name} was copied to {destinationCourse.Name}.",
+            "OK"
+        );
+    }
+
     private void AssignmentGroupSelectionChanged(
         object? sender,
         SelectionChangedEventArgs e)
@@ -1357,6 +1424,23 @@ private async void DeleteModuleClicked(
             in currentCourse.Assignments)
         {
             displayedAssignments.Add(assignment);
+        }
+    }
+
+    private void RefreshDestinationCourses()
+    {
+        displayedDestinationCourses.Clear();
+
+        DestinationCoursesCollectionView.SelectedItem =
+            null;
+
+        foreach (
+            Course course
+            in CourseServiceProxy.Current.Courses
+                .Where(course => course.Id != CourseId)
+                .OrderBy(course => course.Name))
+        {
+            displayedDestinationCourses.Add(course);
         }
     }
 
