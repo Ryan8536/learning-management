@@ -25,7 +25,7 @@
                 Text="{Binding Code}"
                 HorizontalOptions="Center" />
 
-            <!-- Students -->
+            <!-- Course Roster -->
 
             <Label
                 Text="Course Roster"
@@ -37,6 +37,12 @@
                 HeightRequest="160"
                 SelectionMode="Single"
                 SelectionChanged="RosterSelectionChanged">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No students are enrolled in this course."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -84,6 +90,12 @@
                 SelectionMode="Single"
                 SelectionChanged="StudentSelectionChanged">
 
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No additional university students are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
@@ -99,6 +111,10 @@
                             <Label
                                 Text="{Binding Code,
                                        StringFormat='Student Code: {0}'}" />
+
+                            <Label
+                                Text="{Binding Classification,
+                                       StringFormat='Classification: {0}'}" />
 
                         </VerticalStackLayout>
 
@@ -141,16 +157,21 @@
 
             <CollectionView
                 x:Name="ModulesCollectionView"
-                HeightRequest="130"
+                HeightRequest="150"
                 SelectionMode="Single"
                 SelectionChanged="ModuleSelectionChanged">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No modules are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
                         <Label
-                            Text="{Binding Id,
-                                   StringFormat='Module {0}'}"
+                            Text="{Binding DisplayText}"
                             Padding="10"
                             FontSize="20" />
 
@@ -159,9 +180,21 @@
 
             </CollectionView>
 
+            <Entry
+                x:Name="ModuleNameEntry"
+                Placeholder="Module name" />
+
             <Button
                 Text="Add Module"
                 Clicked="AddModuleClicked" />
+
+            <Button
+                Text="Update Selected Module"
+                Clicked="UpdateModuleClicked" />
+
+            <Button
+                Text="Delete Selected Module"
+                Clicked="DeleteModuleClicked" />
 
             <Label
                 Text="Selected Module Items"
@@ -173,6 +206,12 @@
                 HeightRequest="200"
                 SelectionMode="Single"
                 SelectionChanged="ContentSelectionChanged">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="The selected module has no content."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -197,6 +236,14 @@
                 HeightRequest="90" />
 
             <Button
+                Text="Update Selected Page or File"
+                Clicked="UpdateContentClicked" />
+
+            <Button
+                Text="Remove Selected Module Item"
+                Clicked="RemoveContentClicked" />
+
+            <Button
                 Text="Add Page to Selected Module"
                 Clicked="AddPageClicked" />
 
@@ -217,6 +264,12 @@
                 x:Name="ModuleAssignmentCollectionView"
                 HeightRequest="150"
                 SelectionMode="Single">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No assignments are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -245,14 +298,6 @@
                 Text="Add Selected Assignment to Module"
                 Clicked="AddAssignmentToModuleClicked" />
 
-            <Button
-                Text="Update Selected Page or File"
-                Clicked="UpdateContentClicked" />
-
-            <Button
-                Text="Remove Selected Module Item"
-                Clicked="RemoveContentClicked" />
-
             <!-- Assignments -->
 
             <Label
@@ -269,6 +314,12 @@
                 HeightRequest="220"
                 SelectionMode="Single"
                 SelectionChanged="AssignmentSelectionChanged">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No assignments are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -319,7 +370,8 @@
                 Placeholder="Available points"
                 Keyboard="Numeric" />
 
-            <Label Text="Due Date" />
+            <Label
+                Text="Due Date" />
 
             <DatePicker
                 x:Name="AssignmentDueDatePicker" />
@@ -356,6 +408,12 @@
                 HeightRequest="200"
                 SelectionMode="Single"
                 SelectionChanged="AssignmentGroupSelectionChanged">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No assignment groups are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -415,6 +473,12 @@
                 HeightRequest="180"
                 SelectionMode="Single">
 
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="The selected group has no assignments."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
 
@@ -455,6 +519,12 @@
                 x:Name="AvailableGroupAssignmentsCollectionView"
                 HeightRequest="180"
                 SelectionMode="Single">
+
+                <CollectionView.EmptyView>
+                    <Label
+                        Text="No assignments are available."
+                        FontSize="16" />
+                </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
