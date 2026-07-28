@@ -17,6 +17,7 @@ public partial class CourseMenuPage : ContentPage
     private Student? selectedStudent;
     private Student? selectedRosterStudent;
     private AssignmentGroup? selectedAssignmentGroup;
+    private Announcement? selectedAnnouncement;
 
     private ObservableCollection<Student> displayedRoster;
     private ObservableCollection<Student> displayedStudents;
@@ -24,6 +25,7 @@ public partial class CourseMenuPage : ContentPage
     private ObservableCollection<ModuleItem> displayedContent;
     private ObservableCollection<Assignment> displayedAssignments;
     private ObservableCollection<Course> displayedDestinationCourses;
+    private ObservableCollection<Announcement> displayedAnnouncements;
     
     private ObservableCollection<AssignmentGroup>
         displayedAssignmentGroups;
@@ -53,6 +55,9 @@ public partial class CourseMenuPage : ContentPage
         displayedDestinationCourses =
             new ObservableCollection<Course>();
 
+        displayedAnnouncements =
+            new ObservableCollection<Announcement>();
+
         displayedAssignmentGroups =
             new ObservableCollection<AssignmentGroup>();
 
@@ -80,6 +85,9 @@ public partial class CourseMenuPage : ContentPage
         DestinationCoursesCollectionView.ItemsSource =
             displayedDestinationCourses;
 
+        AnnouncementsCollectionView.ItemsSource =
+            displayedAnnouncements;
+
         AssignmentGroupsCollectionView.ItemsSource =
             displayedAssignmentGroups;
 
@@ -105,7 +113,9 @@ public partial class CourseMenuPage : ContentPage
         selectedAssignment = null;
         selectedAssignmentGroup = null;
         selectedRosterStudent = null;
+        selectedAnnouncement = null;
 
+        AnnouncementsCollectionView.SelectedItem = null;
         RosterCollectionView.SelectedItem = null;
         StudentsCollectionView.SelectedItem = null;
         ModulesCollectionView.SelectedItem = null;
@@ -119,6 +129,8 @@ public partial class CourseMenuPage : ContentPage
         AvailableGroupAssignmentsCollectionView.SelectedItem =
             null;
 
+        AnnouncementTitleEntry.Text = "";
+        AnnouncementMessageEditor.Text = "";
         StudentNameEntry.Text = "";
         StudentCodeEntry.Text = "";
         StudentClassificationEntry.Text = "";
@@ -129,6 +141,7 @@ public partial class CourseMenuPage : ContentPage
         ClearModuleItemForm();
         ClearAssignmentForm();
 
+        RefreshAnnouncements();
         RefreshRoster();
         RefreshStudents();
         RefreshModules();
@@ -139,6 +152,131 @@ public partial class CourseMenuPage : ContentPage
         RefreshGroupAssignments();
     }
     
+    private void AnnouncementSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedAnnouncement = AnnouncementsCollectionView.SelectedItem as Announcement;
+
+        if (selectedAnnouncement == null)
+        {
+            return;
+        }
+
+        AnnouncementTitleEntry.Text = selectedAnnouncement.Title;
+        AnnouncementMessageEditor.Text = selectedAnnouncement.Message;
+    }
+
+    private async void AddAnnouncementClicked(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(AnnouncementTitleEntry.Text))
+        {
+            await DisplayAlertAsync("Missing Title", "Enter an announcement title.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(AnnouncementMessageEditor.Text))
+        {
+            await DisplayAlertAsync("Missing Message", "Enter an announcement message.", "OK");
+            return;
+        }
+
+        CourseServiceProxy.Current.AddAnnouncement(
+            CourseId,
+            AnnouncementTitleEntry.Text,
+            AnnouncementMessageEditor.Text
+        );
+
+        ClearAnnouncementSelection();
+        RefreshAnnouncements();
+    }
+
+    private async void UpdateAnnouncementClicked(object? sender, EventArgs e)
+    {
+        if (selectedAnnouncement == null)
+        {
+            await DisplayAlertAsync("No Announcement Selected", "Select an announcement before updating it.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(AnnouncementTitleEntry.Text))
+        {
+            await DisplayAlertAsync("Missing Title", "Enter an announcement title.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(AnnouncementMessageEditor.Text))
+        {
+            await DisplayAlertAsync("Missing Message", "Enter an announcement message.", "OK");
+            return;
+        }
+
+        CourseServiceProxy.Current.UpdateAnnouncement(
+            CourseId,
+            selectedAnnouncement.Id,
+            AnnouncementTitleEntry.Text,
+            AnnouncementMessageEditor.Text
+        );
+
+        ClearAnnouncementSelection();
+        RefreshAnnouncements();
+    }
+
+    private async void DeleteAnnouncementClicked(object? sender, EventArgs e)
+    {
+        if (selectedAnnouncement == null)
+        {
+            await DisplayAlertAsync("No Announcement Selected", "Select an announcement before deleting it.", "OK");
+            return;
+        }
+
+        bool shouldDelete = await DisplayAlertAsync(
+            "Delete Announcement",
+            "Delete the selected announcement?",
+            "Delete",
+            "Cancel"
+        );
+
+        if (!shouldDelete)
+        {
+            return;
+        }
+
+        CourseServiceProxy.Current.DeleteAnnouncement(CourseId, selectedAnnouncement.Id);
+        ClearAnnouncementSelection();
+        RefreshAnnouncements();
+    }
+
+    private void ClearAnnouncementFormClicked(object? sender, EventArgs e)
+    {
+        ClearAnnouncementSelection();
+    }
+
+    private void ClearAnnouncementSelection()
+    {
+        selectedAnnouncement = null;
+        AnnouncementsCollectionView.SelectedItem = null;
+        AnnouncementTitleEntry.Text = "";
+        AnnouncementMessageEditor.Text = "";
+    }
+
+    private void RefreshAnnouncements()
+    {
+        displayedAnnouncements.Clear();
+        AnnouncementsCollectionView.SelectedItem = null;
+        selectedAnnouncement = null;
+
+        if (currentCourse == null)
+        {
+            return;
+        }
+
+        foreach (Announcement announcement in currentCourse.Announcements.OrderByDescending(a => a.PostedDate))
+        {
+            displayedAnnouncements.Add(announcement);
+        }
+    }
+
     private void RosterSelectionChanged(
     object? sender,
     SelectionChangedEventArgs e)

@@ -25,6 +25,51 @@
                 Text="{Binding Code}"
                 HorizontalOptions="Center" />
 
+            <!-- Announcements -->
+
+            <Label
+                Text="Announcements"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Create, update, or delete announcements for this course."
+                FontSize="14" />
+
+            <CollectionView
+                x:Name="AnnouncementsCollectionView"
+                HeightRequest="220"
+                SelectionMode="Single"
+                SelectionChanged="AnnouncementSelectionChanged">
+
+                <CollectionView.EmptyView>
+                    <Label Text="No announcements are available." FontSize="16" />
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout Padding="10" Spacing="3">
+                            <Label Text="{Binding Title}" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="{Binding Message}" />
+                            <Label Text="{Binding PostedDate, StringFormat='Posted: {0:MM/dd/yyyy h:mm tt}'}" FontSize="13" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Entry x:Name="AnnouncementTitleEntry" Placeholder="Announcement title" />
+
+            <Editor x:Name="AnnouncementMessageEditor" Placeholder="Announcement message" HeightRequest="110" />
+
+            <Button Text="Add Announcement" Clicked="AddAnnouncementClicked" />
+
+            <Button Text="Update Selected Announcement" Clicked="UpdateAnnouncementClicked" />
+
+            <Button Text="Delete Selected Announcement" Clicked="DeleteAnnouncementClicked" />
+
+            <Button Text="Clear Announcement Form" Clicked="ClearAnnouncementFormClicked" />
+
             <!-- Students -->
 
             <Label

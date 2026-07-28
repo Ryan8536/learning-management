@@ -9,6 +9,9 @@ namespace Maui.LMS.Views;
 public partial class StudentCourseDetailPage :
     ContentPage
 {
+    private readonly ObservableCollection<Announcement>
+        displayedAnnouncements;
+
     private readonly ObservableCollection<string>
         displayedModuleContent;
 
@@ -27,11 +30,17 @@ public partial class StudentCourseDetailPage :
     {
         InitializeComponent();
 
+        displayedAnnouncements =
+            new ObservableCollection<Announcement>();
+
         displayedModuleContent =
             new ObservableCollection<string>();
 
         displayedGrades =
             new ObservableCollection<string>();
+
+        AnnouncementsCollectionView.ItemsSource =
+            displayedAnnouncements;
 
         ModuleContentCollectionView.ItemsSource =
             displayedModuleContent;
@@ -111,6 +120,7 @@ public partial class StudentCourseDetailPage :
         }
 
         DisplayCourseInformation();
+        RefreshAnnouncements();
         RefreshCourseGrade();
         RefreshAssignments();
         RefreshModuleContent();
@@ -145,6 +155,29 @@ public partial class StudentCourseDetailPage :
 
         DescriptionLabel.Text =
             selectedCourse.Description;
+    }
+
+    private void RefreshAnnouncements()
+    {
+        displayedAnnouncements.Clear();
+
+        if (selectedCourse == null)
+        {
+            return;
+        }
+
+        foreach (
+            Announcement announcement
+            in selectedCourse.Announcements
+                .OrderByDescending(
+                    announcement =>
+                        announcement.PostedDate
+                ))
+        {
+            displayedAnnouncements.Add(
+                announcement
+            );
+        }
     }
 
     private void RefreshCourseGrade()
@@ -351,14 +384,12 @@ public partial class StudentCourseDetailPage :
             return;
         }
 
-        int moduleNumber = 1;
-
         foreach (
             Module module
             in selectedCourse.Modules)
         {
             displayedModuleContent.Add(
-                $"Module {moduleNumber}"
+                module.DisplayText
             );
 
             foreach (
@@ -369,8 +400,6 @@ public partial class StudentCourseDetailPage :
                     $"   {item.DisplayText}"
                 );
             }
-
-            moduleNumber++;
         }
     }
 
@@ -469,6 +498,7 @@ public partial class StudentCourseDetailPage :
         AssignmentsCollectionView.ItemsSource =
             null;
 
+        displayedAnnouncements.Clear();
         displayedModuleContent.Clear();
         displayedGrades.Clear();
     }
