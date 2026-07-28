@@ -432,6 +432,28 @@
                 Clicked="ClearAssignmentFormClicked" />
 
             <Label
+                Text="Import or Export Assignments"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Export this course's assignments to CSV or import assignments from a CSV file."
+                FontSize="14" />
+
+            <Button
+                Text="Export Course Assignments"
+                Clicked="ExportAssignmentsClicked" />
+
+            <Entry
+                x:Name="AssignmentImportFileNameEntry"
+                Placeholder="CSV filename in Downloads"
+                Text="assignment-test.csv" />
+
+            <Button
+                Text="Import Course Assignments from Downloads"
+                Clicked="ImportAssignmentsFromDownloadsClicked" />
+
+            <Label
                 Text="Copy Selected Assignment to Another Course"
                 FontSize="24"
                 Margin="0,20,0,0" />
