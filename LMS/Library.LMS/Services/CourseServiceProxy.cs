@@ -578,7 +578,136 @@ public void RemoveModuleItem(
     }
 
     module.Content.Remove(item);
-}    public void AddAssignment(
+} 
+
+public Announcement? AddAnnouncement(
+    int courseId,
+    string? title,
+    string? message)
+{
+    if (string.IsNullOrWhiteSpace(title))
+    {
+        return null;
+    }
+
+    if (string.IsNullOrWhiteSpace(message))
+    {
+        return null;
+    }
+
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return null;
+    }
+
+    int newAnnouncementId =
+        course.Announcements.Count == 0
+            ? 1
+            : course.Announcements.Max(
+                announcement =>
+                    announcement.Id
+            ) + 1;
+
+    Announcement announcement =
+        new Announcement
+        {
+            Id = newAnnouncementId,
+            Title = title.Trim(),
+            Message = message.Trim(),
+            PostedDate = DateTime.Now
+        };
+
+    course.Announcements.Add(
+        announcement
+    );
+
+    return announcement;
+}
+
+public bool UpdateAnnouncement(
+    int courseId,
+    int announcementId,
+    string? title,
+    string? message)
+{
+    if (string.IsNullOrWhiteSpace(title))
+    {
+        return false;
+    }
+
+    if (string.IsNullOrWhiteSpace(message))
+    {
+        return false;
+    }
+
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return false;
+    }
+
+    Announcement? announcement =
+        course.Announcements.FirstOrDefault(
+            announcement =>
+                announcement.Id ==
+                announcementId
+        );
+
+    if (announcement == null)
+    {
+        return false;
+    }
+
+    announcement.Title =
+        title.Trim();
+
+    announcement.Message =
+        message.Trim();
+
+    announcement.PostedDate =
+        DateTime.Now;
+
+    return true;
+}
+
+public bool DeleteAnnouncement(
+    int courseId,
+    int announcementId)
+{
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return false;
+    }
+
+    Announcement? announcement =
+        course.Announcements.FirstOrDefault(
+            announcement =>
+                announcement.Id ==
+                announcementId
+        );
+
+    if (announcement == null)
+    {
+        return false;
+    }
+
+    course.Announcements.Remove(
+        announcement
+    );
+
+    return true;
+}
+
+
+   public void AddAssignment(
         int courseId,
         string? name,
         string? description,

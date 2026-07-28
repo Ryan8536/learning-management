@@ -104,12 +104,15 @@ public class Course : INotifyPropertyChanged
 
     public List<AssignmentGroup> AssignmentGroups { get; set; }
 
+    public List<Announcement> Announcements { get; set; }
+
     public Course()
     {
         Roster = new List<Student>();
         Modules = new List<Module>();
         Assignments = new List<Assignment>();
         AssignmentGroups = new List<AssignmentGroup>();
+        Announcements = new List<Announcement>();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
