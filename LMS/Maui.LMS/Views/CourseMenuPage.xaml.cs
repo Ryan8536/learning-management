@@ -1357,6 +1357,322 @@ private async void DeleteModuleClicked(
         ClearAssignmentSelection();
     }
 
+
+    private async void ExportAssignmentsClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (currentCourse == null)
+        {
+            await DisplayAlertAsync(
+                "Course Not Found",
+                "The course could not be found.",
+                "OK"
+            );
+
+            return;
+        }
+
+        StringBuilder csv =
+            new StringBuilder();
+
+        csv.AppendLine(
+            "Name,Description,AvailablePoints,DueDate"
+        );
+
+        foreach (
+            Assignment assignment
+            in currentCourse.Assignments
+                .OrderBy(assignment => assignment.DueDate)
+                .ThenBy(assignment => assignment.Name))
+        {
+            csv.Append(
+                EscapeCsvValue(assignment.Name)
+            );
+
+            csv.Append(',');
+
+            csv.Append(
+                EscapeCsvValue(assignment.Description)
+            );
+
+            csv.Append(',');
+
+            csv.Append(
+                assignment.AvailablePoints
+            );
+
+            csv.Append(',');
+
+            csv.AppendLine(
+                assignment.DueDate.ToString("yyyy-MM-dd")
+            );
+        }
+
+        string safeCourseName =
+            string.Concat(
+                (currentCourse.Code
+                    ?? currentCourse.Name
+                    ?? "course")
+                .Select(
+                    character =>
+                        Path.GetInvalidFileNameChars()
+                            .Contains(character)
+                            ? '_'
+                            : character
+                )
+            );
+
+        string exportPath =
+            Path.Combine(
+                FileSystem.CacheDirectory,
+                $"{safeCourseName}_assignments.csv"
+            );
+
+        await File.WriteAllTextAsync(
+            exportPath,
+            csv.ToString()
+        );
+
+        await Share.Default.RequestAsync(
+            new ShareFileRequest
+            {
+                Title =
+                    $"Export {currentCourse.Name} Assignments",
+
+                File =
+                    new ShareFile(exportPath)
+            }
+        );
+    }
+
+    private async void ImportAssignmentsFromDownloadsClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (currentCourse == null)
+        {
+            await DisplayAlertAsync(
+                "Course Not Found",
+                "The course could not be found.",
+                "OK"
+            );
+
+            return;
+        }
+
+        string fileName =
+            AssignmentImportFileNameEntry.Text?.Trim()
+            ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            await DisplayAlertAsync(
+                "Filename Required",
+                "Enter the CSV filename located in Downloads.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (!fileName.EndsWith(
+            ".csv",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            await DisplayAlertAsync(
+                "Invalid File",
+                "The assignment import file must end in .csv.",
+                "OK"
+            );
+
+            return;
+        }
+
+        try
+        {
+            string downloadsFolder =
+                Path.Combine(
+                    Environment.GetFolderPath(
+                        Environment.SpecialFolder.UserProfile
+                    ),
+                    "Downloads"
+                );
+
+            string filePath =
+                Path.Combine(
+                    downloadsFolder,
+                    fileName
+                );
+
+            if (!File.Exists(filePath))
+            {
+                await DisplayAlertAsync(
+                    "File Not Found",
+                    $"The file was not found at:\n{filePath}",
+                    "OK"
+                );
+
+                return;
+            }
+
+            string[] rows =
+                await File.ReadAllLinesAsync(
+                    filePath
+                );
+
+            int importedCount = 0;
+            int duplicateCount = 0;
+            int invalidRowCount = 0;
+            bool firstNonEmptyRow = true;
+
+            foreach (string row in rows)
+            {
+                if (string.IsNullOrWhiteSpace(row))
+                {
+                    continue;
+                }
+
+                List<string> values =
+                    ParseCsvRow(row);
+
+                if (firstNonEmptyRow)
+                {
+                    firstNonEmptyRow = false;
+
+                    bool rowIsHeader =
+                        values.Count >= 4
+                        &&
+                        string.Equals(
+                            values[0].Trim(),
+                            "Name",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        &&
+                        string.Equals(
+                            values[1].Trim(),
+                            "Description",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        &&
+                        string.Equals(
+                            values[2].Trim(),
+                            "AvailablePoints",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        &&
+                        string.Equals(
+                            values[3].Trim(),
+                            "DueDate",
+                            StringComparison.OrdinalIgnoreCase
+                        );
+
+                    if (rowIsHeader)
+                    {
+                        continue;
+                    }
+                }
+
+                if (values.Count < 4)
+                {
+                    invalidRowCount++;
+                    continue;
+                }
+
+                string name =
+                    values[0].Trim();
+
+                string description =
+                    values[1].Trim();
+
+                bool pointsAreValid =
+                    int.TryParse(
+                        values[2].Trim(),
+                        out int availablePoints
+                    );
+
+                bool dueDateIsValid =
+                    DateTime.TryParse(
+                        values[3].Trim(),
+                        out DateTime dueDate
+                    );
+
+                if (
+                    string.IsNullOrWhiteSpace(name)
+                    ||
+                    !pointsAreValid
+                    ||
+                    availablePoints < 0
+                    ||
+                    !dueDateIsValid
+                )
+                {
+                    invalidRowCount++;
+                    continue;
+                }
+
+                bool alreadyExists =
+                    currentCourse.Assignments.Any(
+                        assignment =>
+                            string.Equals(
+                                assignment.Name?.Trim(),
+                                name,
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                            &&
+                            string.Equals(
+                                assignment.Description?.Trim()
+                                    ?? string.Empty,
+                                description,
+                                StringComparison.Ordinal
+                            )
+                            &&
+                            assignment.AvailablePoints ==
+                                availablePoints
+                            &&
+                            assignment.DueDate.Date ==
+                                dueDate.Date
+                    );
+
+                if (alreadyExists)
+                {
+                    duplicateCount++;
+                    continue;
+                }
+
+                CourseServiceProxy.Current.AddAssignment(
+                    CourseId,
+                    name,
+                    description,
+                    availablePoints,
+                    dueDate.Date
+                );
+
+                importedCount++;
+            }
+
+            ClearAssignmentSelection();
+            RefreshAssignments();
+
+            await DisplayAlertAsync(
+                "Assignment Import Complete",
+                $"Assignments imported: {importedCount}\n" +
+                $"Duplicates skipped: {duplicateCount}\n" +
+                $"Invalid rows skipped: {invalidRowCount}",
+                "OK"
+            );
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync(
+                "Import Failed",
+                $"The assignments could not be imported. " +
+                exception.Message,
+                "OK"
+            );
+        }
+    }
+
     private async void CopyAssignmentClicked(
         object? sender,
         EventArgs e)
