@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.LMS.Views.CourseSettingsPage"
+             Title="Course Settings"
+             NavigatedTo="CourseSettingsPageNavigatedTo">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="18">
+
+            <Label
+                Text="Course Settings"
+                FontSize="32"
+                FontAttributes="Bold"
+                HorizontalOptions="Center" />
+
+            <Label
+                x:Name="CourseNameLabel"
+                FontSize="24"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="Letter Grade Ranges"
+                FontSize="26"
+                FontAttributes="Bold"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Enter the minimum percentage required for each letter grade."
+                FontSize="16" />
+
+            <Label
+                Text="Minimum percentage for A"
+                FontSize="17" />
+
+            <Entry
+                x:Name="MinimumAPercentageEntry"
+                Placeholder="90"
+                Keyboard="Numeric" />
+
+            <Label
+                Text="Minimum percentage for B"
+                FontSize="17" />
+
+            <Entry
+                x:Name="MinimumBPercentageEntry"
+                Placeholder="80"
+                Keyboard="Numeric" />
+
+            <Label
+                Text="Minimum percentage for C"
+                FontSize="17" />
+
+            <Entry
+                x:Name="MinimumCPercentageEntry"
+                Placeholder="70"
+                Keyboard="Numeric" />
+
+            <Label
+                Text="Minimum percentage for D"
+                FontSize="17" />
+
+            <Entry
+                x:Name="MinimumDPercentageEntry"
+                Placeholder="60"
+                Keyboard="Numeric" />
+
+            <Label
+                Text="Scores below the minimum D percentage receive an F."
+                FontSize="15"
+                FontAttributes="Italic" />
+
+            <Button
+                Text="Save Grade Ranges"
+                Clicked="SaveGradeRangesClicked" />
+
+            <Button
+                Text="Restore Default Grade Ranges"
+                Clicked="RestoreDefaultsClicked" />
+
+            <Button
+                Text="Return to Course Menu"
+                Clicked="ReturnToCourseMenuClicked" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

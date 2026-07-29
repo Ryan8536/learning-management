@@ -224,32 +224,48 @@ public partial class StudentCourseDetailPage :
             $"{percentage:0.##}%";
     }
 
-    private static string GetLetterGrade(
-        double percentage)
+    private string GetLetterGrade(
+    double percentage)
+{
+    if (selectedCourse == null)
     {
-        if (percentage >= 90)
-        {
-            return "A";
-        }
-
-        if (percentage >= 80)
-        {
-            return "B";
-        }
-
-        if (percentage >= 70)
-        {
-            return "C";
-        }
-
-        if (percentage >= 60)
-        {
-            return "D";
-        }
-
-        return "F";
+        return "Not Available";
     }
 
+    if (
+        percentage >=
+        selectedCourse.MinimumAPercentage
+    )
+    {
+        return "A";
+    }
+
+    if (
+        percentage >=
+        selectedCourse.MinimumBPercentage
+    )
+    {
+        return "B";
+    }
+
+    if (
+        percentage >=
+        selectedCourse.MinimumCPercentage
+    )
+    {
+        return "C";
+    }
+
+    if (
+        percentage >=
+        selectedCourse.MinimumDPercentage
+    )
+    {
+        return "D";
+    }
+
+    return "F";
+}
     private void RefreshAssignments()
     {
         if (selectedCourse == null)

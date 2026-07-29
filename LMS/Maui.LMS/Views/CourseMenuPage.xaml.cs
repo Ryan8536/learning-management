@@ -2284,6 +2284,16 @@ private async void DeleteModuleClicked(
         }
     }
 
+    private async void OpenCourseSettingsClicked(
+    object? sender,
+    EventArgs e)
+{
+    await Shell.Current.GoToAsync(
+        $"{nameof(CourseSettingsPage)}" +
+        $"?courseId={CourseId}"
+    );
+}
+
     private async void BackClicked(
         object? sender,
         EventArgs e)

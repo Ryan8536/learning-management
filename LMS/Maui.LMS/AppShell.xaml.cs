@@ -1,9 +1,16 @@
-﻿namespace Maui.LMS;
+﻿using Maui.LMS.Views;
+
+namespace Maui.LMS;
 
 public partial class AppShell : Shell
 {
-	public AppShell()
-	{
-		InitializeComponent();
-	}
+    public AppShell()
+    {
+        InitializeComponent();
+
+        Routing.RegisterRoute(
+            nameof(CourseSettingsPage),
+            typeof(CourseSettingsPage)
+        );
+    }
 }

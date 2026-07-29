@@ -12,6 +12,11 @@ public class Course : INotifyPropertyChanged
     private string? semester;
     private string? section;
 
+    private double minimumAPercentage = 90;
+    private double minimumBPercentage = 80;
+    private double minimumCPercentage = 70;
+    private double minimumDPercentage = 60;
+
     public int Id
     {
         get
@@ -92,6 +97,62 @@ public class Course : INotifyPropertyChanged
         set
         {
             section = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public double MinimumAPercentage
+    {
+        get
+        {
+            return minimumAPercentage;
+        }
+
+        set
+        {
+            minimumAPercentage = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public double MinimumBPercentage
+    {
+        get
+        {
+            return minimumBPercentage;
+        }
+
+        set
+        {
+            minimumBPercentage = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public double MinimumCPercentage
+    {
+        get
+        {
+            return minimumCPercentage;
+        }
+
+        set
+        {
+            minimumCPercentage = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public double MinimumDPercentage
+    {
+        get
+        {
+            return minimumDPercentage;
+        }
+
+        set
+        {
+            minimumDPercentage = value;
             NotifyPropertyChanged();
         }
     }
