@@ -14,7 +14,12 @@ public partial class TeacherMenuPage :
     private readonly ObservableCollection<Student>
         displayedStudents;
 
+    private readonly ObservableCollection<Semester>
+        displayedSemesters;
+
     private Student? selectedStudent;
+
+    private Semester? selectedManagedSemester;
 
     public TeacherMenuPage()
     {
@@ -26,11 +31,19 @@ public partial class TeacherMenuPage :
         displayedStudents =
             new ObservableCollection<Student>();
 
+        displayedSemesters =
+            new ObservableCollection<Semester>();
+
         BindingContext =
             viewModel;
 
         StudentsCollectionView.ItemsSource =
             displayedStudents;
+
+        ManagedSemestersCollectionView.ItemsSource =
+            displayedSemesters;
+
+        ClearSemesterForm();
     }
 
     private void TeacherMenuPageNavigatedTo(
@@ -39,6 +52,7 @@ public partial class TeacherMenuPage :
     {
         viewModel.RefreshCourses();
         RefreshStudents();
+        RefreshSemesters();
     }
 
     private void RefreshStudents()
@@ -60,6 +74,323 @@ public partial class TeacherMenuPage :
         {
             displayedStudents.Add(student);
         }
+    }
+
+    private void RefreshSemesters()
+    {
+        selectedManagedSemester =
+            null;
+
+        ManagedSemestersCollectionView.SelectedItem =
+            null;
+
+        displayedSemesters.Clear();
+
+        foreach (
+            Semester semester
+            in SemesterServiceProxy.Current.Semesters
+                .OrderBy(
+                    semester => semester.StartDate
+                )
+                .ThenBy(
+                    semester => semester.Name
+                ))
+        {
+            displayedSemesters.Add(semester);
+        }
+    }
+
+    private void ManagedSemesterSelectionChanged(
+        object? sender,
+        SelectionChangedEventArgs e)
+    {
+        selectedManagedSemester =
+            ManagedSemestersCollectionView.SelectedItem
+            as Semester;
+
+        if (selectedManagedSemester == null)
+        {
+            return;
+        }
+
+        SemesterNameEntry.Text =
+            selectedManagedSemester.Name;
+
+        SemesterStartDatePicker.Date =
+            selectedManagedSemester.StartDate;
+
+        SemesterEndDatePicker.Date =
+            selectedManagedSemester.EndDate;
+    }
+
+    private async void AddSemesterClicked(
+        object? sender,
+        EventArgs e)
+    {
+        string semesterName =
+            SemesterNameEntry.Text?.Trim()
+            ?? string.Empty;
+
+        DateTime startDate =
+            SemesterStartDatePicker.Date
+            ?? DateTime.Today;
+
+        DateTime endDate =
+            SemesterEndDatePicker.Date
+            ?? DateTime.Today;
+
+        if (string.IsNullOrWhiteSpace(semesterName))
+        {
+            await DisplayAlertAsync(
+                "Semester Name Required",
+                "Enter a semester name.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (endDate.Date < startDate.Date)
+        {
+            await DisplayAlertAsync(
+                "Invalid Semester Dates",
+                "The stop date cannot be before the start date.",
+                "OK"
+            );
+
+            return;
+        }
+
+        bool duplicateExists =
+            SemesterServiceProxy.Current.Semesters.Any(
+                semester =>
+                    string.Equals(
+                        semester.Name,
+                        semesterName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+            );
+
+        if (duplicateExists)
+        {
+            await DisplayAlertAsync(
+                "Semester Already Exists",
+                "A semester with that name already exists.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Semester? semester =
+            SemesterServiceProxy.Current.AddSemester(
+                semesterName,
+                startDate,
+                endDate
+            );
+
+        if (semester == null)
+        {
+            await DisplayAlertAsync(
+                "Semester Not Added",
+                "The semester could not be added.",
+                "OK"
+            );
+
+            return;
+        }
+
+        RefreshSemesters();
+        ClearSemesterForm();
+
+        await DisplayAlertAsync(
+            "Semester Added",
+            $"{semester.Name} was added.",
+            "OK"
+        );
+    }
+
+    private async void UpdateSemesterClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedManagedSemester == null)
+        {
+            await DisplayAlertAsync(
+                "No Semester Selected",
+                "Select a semester before updating it.",
+                "OK"
+            );
+
+            return;
+        }
+
+        string semesterName =
+            SemesterNameEntry.Text?.Trim()
+            ?? string.Empty;
+
+        DateTime startDate =
+            SemesterStartDatePicker.Date
+            ?? DateTime.Today;
+
+        DateTime endDate =
+            SemesterEndDatePicker.Date
+            ?? DateTime.Today;
+
+        if (string.IsNullOrWhiteSpace(semesterName))
+        {
+            await DisplayAlertAsync(
+                "Semester Name Required",
+                "Enter a semester name.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (endDate.Date < startDate.Date)
+        {
+            await DisplayAlertAsync(
+                "Invalid Semester Dates",
+                "The stop date cannot be before the start date.",
+                "OK"
+            );
+
+            return;
+        }
+
+        bool duplicateExists =
+            SemesterServiceProxy.Current.Semesters.Any(
+                semester =>
+                    semester.Id != selectedManagedSemester.Id
+                    &&
+                    string.Equals(
+                        semester.Name,
+                        semesterName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+            );
+
+        if (duplicateExists)
+        {
+            await DisplayAlertAsync(
+                "Semester Already Exists",
+                "A semester with that name already exists.",
+                "OK"
+            );
+
+            return;
+        }
+
+        bool updated =
+            SemesterServiceProxy.Current.UpdateSemester(
+                selectedManagedSemester.Id,
+                semesterName,
+                startDate,
+                endDate
+            );
+
+        if (!updated)
+        {
+            await DisplayAlertAsync(
+                "Semester Not Updated",
+                "The semester could not be updated.",
+                "OK"
+            );
+
+            return;
+        }
+
+        RefreshSemesters();
+        ClearSemesterForm();
+
+        await DisplayAlertAsync(
+            "Semester Updated",
+            "The semester dates were updated.",
+            "OK"
+        );
+    }
+
+    private async void DeleteSemesterClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (selectedManagedSemester == null)
+        {
+            await DisplayAlertAsync(
+                "No Semester Selected",
+                "Select a semester before deleting it.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Semester semesterToDelete =
+            selectedManagedSemester;
+
+        bool confirmed =
+            await DisplayAlertAsync(
+                "Delete Semester",
+                $"Delete {semesterToDelete.Name}?",
+                "Delete",
+                "Cancel"
+            );
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        bool deleted =
+            SemesterServiceProxy.Current.DeleteSemester(
+                semesterToDelete.Id
+            );
+
+        if (!deleted)
+        {
+            await DisplayAlertAsync(
+                "Semester Not Deleted",
+                "The semester could not be deleted.",
+                "OK"
+            );
+
+            return;
+        }
+
+        RefreshSemesters();
+        ClearSemesterForm();
+
+        await DisplayAlertAsync(
+            "Semester Deleted",
+            $"{semesterToDelete.Name} was deleted.",
+            "OK"
+        );
+    }
+
+    private void ClearSemesterFormClicked(
+        object? sender,
+        EventArgs e)
+    {
+        ClearSemesterForm();
+    }
+
+    private void ClearSemesterForm()
+    {
+        selectedManagedSemester =
+            null;
+
+        ManagedSemestersCollectionView.SelectedItem =
+            null;
+
+        SemesterNameEntry.Text =
+            string.Empty;
+
+        SemesterStartDatePicker.Date =
+            DateTime.Today;
+
+        SemesterEndDatePicker.Date =
+            DateTime.Today.AddMonths(4);
     }
 
     private async void AddCourseClicked(
