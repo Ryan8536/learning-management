@@ -18,6 +18,9 @@ public partial class StudentCourseDetailPage :
     private readonly ObservableCollection<string>
         displayedGrades;
 
+    private readonly ObservableCollection<SubmissionComment>
+        displayedSubmissionComments;
+
     private Student? selectedStudent;
     private Course? selectedCourse;
     private Assignment? selectedAssignment;
@@ -39,6 +42,9 @@ public partial class StudentCourseDetailPage :
         displayedGrades =
             new ObservableCollection<string>();
 
+        displayedSubmissionComments =
+            new ObservableCollection<SubmissionComment>();
+
         AnnouncementsCollectionView.ItemsSource =
             displayedAnnouncements;
 
@@ -47,6 +53,9 @@ public partial class StudentCourseDetailPage :
 
         GradesCollectionView.ItemsSource =
             displayedGrades;
+
+        SubmissionCommentsCollectionView.ItemsSource =
+            displayedSubmissionComments;
     }
 
     private void StudentCourseDetailPageNavigatedTo(
@@ -66,6 +75,14 @@ public partial class StudentCourseDetailPage :
 
         SubmissionStatusLabel.Text =
             string.Empty;
+
+        StudentCommentEditor.Text =
+            string.Empty;
+
+        StudentCommentStatusLabel.Text =
+            string.Empty;
+
+        displayedSubmissionComments.Clear();
 
         if (
             !int.TryParse(
@@ -306,6 +323,14 @@ private void AssignmentSelectionChanged(
         false;
 
     ClearSubmissionFile();
+
+    StudentCommentEditor.Text =
+        string.Empty;
+
+    StudentCommentStatusLabel.Text =
+        string.Empty;
+
+    RefreshSubmissionComments();
 
     if (selectedAssignment == null)
     {
@@ -556,6 +581,8 @@ private async Task<string?> CopySubmissionFileFromDownloadsAsync(
 
     ClearSubmissionFile();
 
+    RefreshSubmissionComments();
+
     await DisplayAlertAsync(
         "Submission Added",
         $"Your submission to " +
@@ -563,6 +590,152 @@ private async Task<string?> CopySubmissionFileFromDownloadsAsync(
         "OK"
     );
 }
+    private Submission? GetLatestSelectedSubmission()
+    {
+        if (
+            selectedStudent == null
+            ||
+            selectedAssignment == null
+        )
+        {
+            return null;
+        }
+
+        return selectedAssignment.Submissions
+            .Where(
+                submission =>
+                    submission.StudentId ==
+                        selectedStudent.Id
+            )
+            .OrderByDescending(
+                submission =>
+                    submission.SubmissionDate
+            )
+            .FirstOrDefault();
+    }
+
+    private void RefreshSubmissionComments()
+    {
+        displayedSubmissionComments.Clear();
+
+        Submission? submission =
+            GetLatestSelectedSubmission();
+
+        if (submission == null)
+        {
+            StudentCommentStatusLabel.Text =
+                selectedAssignment == null
+                    ? string.Empty
+                    : "Submit this assignment before adding comments.";
+
+            return;
+        }
+
+        submission.Comments ??=
+            new List<SubmissionComment>();
+
+        foreach (
+            SubmissionComment comment
+            in submission.Comments
+                .OrderBy(
+                    comment =>
+                        comment.PostedDate
+                ))
+        {
+            displayedSubmissionComments.Add(
+                comment
+            );
+        }
+
+        StudentCommentStatusLabel.Text =
+            $"{displayedSubmissionComments.Count} comment(s)";
+    }
+
+    private async void PostStudentCommentClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (
+            selectedStudent == null
+            ||
+            selectedCourse == null
+            ||
+            selectedAssignment == null
+        )
+        {
+            await DisplayAlertAsync(
+                "Comment Not Added",
+                "Select an assignment before adding a comment.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Submission? submission =
+            GetLatestSelectedSubmission();
+
+        if (submission == null)
+        {
+            await DisplayAlertAsync(
+                "No Submission Found",
+                "Submit this assignment before adding a comment.",
+                "OK"
+            );
+
+            return;
+        }
+
+        string message =
+            StudentCommentEditor.Text?.Trim()
+            ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            await DisplayAlertAsync(
+                "Comment Required",
+                "Enter a comment before posting.",
+                "OK"
+            );
+
+            return;
+        }
+
+        SubmissionComment? comment =
+            CourseServiceProxy.Current
+                .AddSubmissionComment(
+                    selectedCourse.Id,
+                    selectedAssignment.Id,
+                    submission.Id,
+                    selectedStudent.Id,
+                    selectedStudent.Name,
+                    "Student",
+                    message
+                );
+
+        if (comment == null)
+        {
+            await DisplayAlertAsync(
+                "Comment Not Added",
+                "The comment could not be saved.",
+                "OK"
+            );
+
+            return;
+        }
+
+        StudentCommentEditor.Text =
+            string.Empty;
+
+        RefreshSubmissionComments();
+
+        await DisplayAlertAsync(
+            "Comment Added",
+            "Your comment was added to the conversation.",
+            "OK"
+        );
+    }
+
     private void RefreshModuleContent()
     {
         displayedModuleContent.Clear();
@@ -689,6 +862,13 @@ private async Task<string?> CopySubmissionFileFromDownloadsAsync(
         displayedAnnouncements.Clear();
         displayedModuleContent.Clear();
         displayedGrades.Clear();
+        displayedSubmissionComments.Clear();
+
+        StudentCommentEditor.Text =
+            string.Empty;
+
+        StudentCommentStatusLabel.Text =
+            string.Empty;
     }
 
     private async void ReturnToCourseListClicked(

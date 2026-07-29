@@ -20,6 +20,12 @@ public class Submission
 
     public string? AttachedFilePath { get; set; }
 
+    public List<SubmissionComment> Comments
+    {
+        get;
+        set;
+    }
+
     public bool HasAttachedFile
     {
         get
@@ -33,5 +39,11 @@ public class Submission
                     AttachedFilePath
                 );
         }
+    }
+
+    public Submission()
+    {
+        Comments =
+            new List<SubmissionComment>();
     }
 }

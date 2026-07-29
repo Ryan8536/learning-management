@@ -46,14 +46,8 @@
                 x:Name="DescriptionLabel"
                 FontSize="17" />
 
-            <!-- Announcements -->
-
-            <Border
-                Padding="18"
-                StrokeThickness="2">
-
-                <VerticalStackLayout
-                    Spacing="10">
+            <Border Padding="18" StrokeThickness="2">
+                <VerticalStackLayout Spacing="10">
 
                     <Label
                         Text="Course Announcements"
@@ -66,25 +60,19 @@
                         SelectionMode="None">
 
                         <CollectionView.EmptyView>
-
                             <Label
                                 Text="There are no course announcements."
                                 FontSize="16" />
-
                         </CollectionView.EmptyView>
 
                         <CollectionView.ItemTemplate>
-
                             <DataTemplate>
-
                                 <Border
                                     Padding="12"
                                     Margin="0,4"
                                     StrokeThickness="1">
 
-                                    <VerticalStackLayout
-                                        Spacing="5">
-
+                                    <VerticalStackLayout Spacing="5">
                                         <Label
                                             Text="{Binding Title}"
                                             FontSize="19"
@@ -99,27 +87,16 @@
                                                    StringFormat='Posted: {0:MM/dd/yyyy h:mm tt}'}"
                                             FontSize="13"
                                             FontAttributes="Italic" />
-
                                     </VerticalStackLayout>
-
                                 </Border>
-
                             </DataTemplate>
-
                         </CollectionView.ItemTemplate>
 
                     </CollectionView>
-
                 </VerticalStackLayout>
-
             </Border>
 
-            <!-- Current Grade -->
-
-            <Border
-                Padding="20"
-                StrokeThickness="2">
-
+            <Border Padding="20" StrokeThickness="2">
                 <VerticalStackLayout
                     Spacing="8"
                     HorizontalOptions="Center">
@@ -142,15 +119,10 @@
                         Text="No graded submissions"
                         FontSize="20"
                         HorizontalOptions="Center" />
-
                 </VerticalStackLayout>
-
             </Border>
 
-            <BoxView
-                HeightRequest="1" />
-
-            <!-- Assignments -->
+            <BoxView HeightRequest="1" />
 
             <Label
                 Text="Assignments"
@@ -168,17 +140,13 @@
                 SelectionChanged="AssignmentSelectionChanged">
 
                 <CollectionView.EmptyView>
-
                     <Label
                         Text="No assignments are available."
                         FontSize="16" />
-
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
-
                     <DataTemplate>
-
                         <VerticalStackLayout
                             Padding="10"
                             Spacing="3">
@@ -188,8 +156,7 @@
                                 FontSize="18"
                                 FontAttributes="Bold" />
 
-                            <Label
-                                Text="{Binding Description}" />
+                            <Label Text="{Binding Description}" />
 
                             <Label
                                 Text="{Binding AvailablePoints,
@@ -198,11 +165,8 @@
                             <Label
                                 Text="{Binding DueDate,
                                        StringFormat='Due: {0:MM/dd/yyyy}'}" />
-
                         </VerticalStackLayout>
-
                     </DataTemplate>
-
                 </CollectionView.ItemTemplate>
 
             </CollectionView>
@@ -226,17 +190,16 @@
                 AutoSize="TextChanges" />
 
             <Entry
-    x:Name="SubmissionFileNameEntry"
-    Placeholder="Filename in Downloads, such as homework.pdf" />
+                x:Name="SubmissionFileNameEntry"
+                Placeholder="Filename in Downloads, such as homework.pdf" />
 
-<Label
-    Text="Enter the exact name of a file located in your Downloads folder."
-    FontSize="14" />
+            <Label
+                Text="Enter the exact name of a file located in your Downloads folder."
+                FontSize="14" />
 
-<Button
-    Text="Clear File"
-    Clicked="ClearSubmissionFileClicked" />
-
+            <Button
+                Text="Clear File"
+                Clicked="ClearSubmissionFileClicked" />
 
             <Button
                 Text="Submit Response"
@@ -246,10 +209,63 @@
                 x:Name="SubmissionStatusLabel"
                 FontSize="16" />
 
-            <BoxView
-                HeightRequest="1" />
+            <Border Padding="18" StrokeThickness="2">
+                <VerticalStackLayout Spacing="10">
 
-            <!-- Modules -->
+                    <Label
+                        Text="Assignment Conversation"
+                        FontSize="24"
+                        FontAttributes="Bold" />
+
+                    <Label
+                        Text="Select an assignment with a submission to view or add comments."
+                        FontSize="15" />
+
+                    <CollectionView
+                        x:Name="SubmissionCommentsCollectionView"
+                        HeightRequest="240"
+                        SelectionMode="None">
+
+                        <CollectionView.EmptyView>
+                            <Label
+                                Text="No comments are available for this submission."
+                                FontSize="16" />
+                        </CollectionView.EmptyView>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Padding="12"
+                                    Margin="0,4"
+                                    StrokeThickness="1">
+
+                                    <Label
+                                        Text="{Binding DisplayText}"
+                                        FontSize="16" />
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+
+                    </CollectionView>
+
+                    <Editor
+                        x:Name="StudentCommentEditor"
+                        Placeholder="Write a comment to your instructor..."
+                        HeightRequest="100"
+                        AutoSize="TextChanges" />
+
+                    <Button
+                        Text="Post Comment"
+                        Clicked="PostStudentCommentClicked" />
+
+                    <Label
+                        x:Name="StudentCommentStatusLabel"
+                        FontSize="15" />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <BoxView HeightRequest="1" />
 
             <Label
                 Text="Modules and Content"
@@ -262,32 +278,23 @@
                 SelectionMode="None">
 
                 <CollectionView.EmptyView>
-
                     <Label
                         Text="No module content is available."
                         FontSize="16" />
-
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
-
                     <DataTemplate>
-
                         <Label
                             Text="{Binding .}"
                             Padding="10"
                             FontSize="17" />
-
                     </DataTemplate>
-
                 </CollectionView.ItemTemplate>
 
             </CollectionView>
 
-            <BoxView
-                HeightRequest="1" />
-
-            <!-- Grades -->
+            <BoxView HeightRequest="1" />
 
             <Label
                 Text="Grades"
@@ -300,24 +307,18 @@
                 SelectionMode="None">
 
                 <CollectionView.EmptyView>
-
                     <Label
                         Text="No graded submissions are available."
                         FontSize="16" />
-
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemTemplate>
-
                     <DataTemplate>
-
                         <Label
                             Text="{Binding .}"
                             Padding="10"
                             FontSize="17" />
-
                     </DataTemplate>
-
                 </CollectionView.ItemTemplate>
 
             </CollectionView>

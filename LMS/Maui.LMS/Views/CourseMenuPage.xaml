@@ -453,6 +453,67 @@
                 Text="Clear Assignment Form"
                 Clicked="ClearAssignmentFormClicked" />
 
+            <Border
+                Padding="18"
+                Margin="0,20,0,0"
+                StrokeThickness="2">
+
+                <VerticalStackLayout Spacing="10">
+
+                    <Label
+                        Text="Assignment Conversation"
+                        FontSize="24"
+                        FontAttributes="Bold" />
+
+                    <Label
+                        Text="Select an assignment above and a student from the course roster to view the student's latest submission conversation."
+                        FontSize="14" />
+
+                    <CollectionView
+                        x:Name="SubmissionCommentsCollectionView"
+                        HeightRequest="240"
+                        SelectionMode="None">
+
+                        <CollectionView.EmptyView>
+                            <Label
+                                Text="No comments are available."
+                                FontSize="16" />
+                        </CollectionView.EmptyView>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                    Padding="12"
+                                    Margin="0,4"
+                                    StrokeThickness="1">
+
+                                    <Label
+                                        Text="{Binding DisplayText}"
+                                        FontSize="16" />
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+
+                    </CollectionView>
+
+                    <Editor
+                        x:Name="InstructorReplyEditor"
+                        Placeholder="Write a reply to the student..."
+                        HeightRequest="100"
+                        AutoSize="TextChanges" />
+
+                    <Button
+                        Text="Post Instructor Reply"
+                        Clicked="PostInstructorReplyClicked" />
+
+                    <Label
+                        x:Name="InstructorCommentStatusLabel"
+                        FontSize="14" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
             <Label
                 Text="Create Quiz"
                 FontSize="24"
