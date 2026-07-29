@@ -1358,6 +1358,114 @@ private async void DeleteModuleClicked(
         ClearAssignmentSelection();
     }
 
+
+    private async void AddQuizClicked(
+    object? sender,
+    EventArgs e)
+{
+    string quizName =
+        QuizNameEntry.Text?.Trim()
+        ?? string.Empty;
+
+    string quizDescription =
+        QuizDescriptionEditor.Text?.Trim()
+        ?? string.Empty;
+
+    string quizQuestion =
+        QuizQuestionEditor.Text?.Trim()
+        ?? string.Empty;
+
+    bool pointsAreValid =
+        int.TryParse(
+            QuizPointsEntry.Text,
+            out int availablePoints
+        );
+
+    if (string.IsNullOrWhiteSpace(quizName))
+    {
+        await DisplayAlertAsync(
+            "Quiz Name Required",
+            "Enter a name for the quiz.",
+            "OK"
+        );
+
+        return;
+    }
+
+    if (string.IsNullOrWhiteSpace(quizQuestion))
+    {
+        await DisplayAlertAsync(
+            "Quiz Question Required",
+            "Enter a question for the quiz.",
+            "OK"
+        );
+
+        return;
+    }
+
+    if (
+        !pointsAreValid
+        ||
+        availablePoints < 0
+    )
+    {
+        await DisplayAlertAsync(
+            "Invalid Points",
+            "Quiz points must be a whole number that is zero or greater.",
+            "OK"
+        );
+
+        return;
+    }
+
+    DateTime dueDate =
+        QuizDueDatePicker.Date
+        ?? DateTime.Today;
+
+    CourseServiceProxy.Current.AddQuiz(
+        CourseId,
+        quizName,
+        quizDescription,
+        quizQuestion,
+        availablePoints,
+        dueDate
+    );
+
+    ClearQuizForm();
+    RefreshAssignments();
+
+    await DisplayAlertAsync(
+        "Quiz Added",
+        "The quiz was added to the course.",
+        "OK"
+    );
+}
+
+private void ClearQuizFormClicked(
+    object? sender,
+    EventArgs e)
+{
+    ClearQuizForm();
+}
+
+private void ClearQuizForm()
+{
+    QuizNameEntry.Text =
+        string.Empty;
+
+    QuizDescriptionEditor.Text =
+        string.Empty;
+
+    QuizQuestionEditor.Text =
+        string.Empty;
+
+    QuizPointsEntry.Text =
+        string.Empty;
+
+    QuizDueDatePicker.Date =
+        DateTime.Today;
+}
+
     private async void ExportGradebookClicked(
     object? sender,
     EventArgs e)

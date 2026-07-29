@@ -285,32 +285,65 @@ public partial class StudentCourseDetailPage :
                 .ToList();
     }
 
-    private void AssignmentSelectionChanged(
-        object? sender,
-        SelectionChangedEventArgs e)
+private void AssignmentSelectionChanged(
+    object? sender,
+    SelectionChangedEventArgs e)
+{
+    selectedAssignment =
+        AssignmentsCollectionView.SelectedItem
+        as Assignment;
+
+    ResponseEditor.Text =
+        string.Empty;
+
+    SubmissionStatusLabel.Text =
+        string.Empty;
+
+    SelectedQuizQuestionLabel.Text =
+        string.Empty;
+
+    SelectedQuizQuestionLabel.IsVisible =
+        false;
+
+    if (selectedAssignment == null)
     {
-        selectedAssignment =
-            AssignmentsCollectionView.SelectedItem
-            as Assignment;
-
-        ResponseEditor.Text =
-            string.Empty;
-
-        SubmissionStatusLabel.Text =
-            string.Empty;
-
-        if (selectedAssignment == null)
-        {
-            SelectedAssignmentLabel.Text =
-                "No assignment selected";
-
-            return;
-        }
-
         SelectedAssignmentLabel.Text =
-            $"Selected Assignment: " +
-            $"{selectedAssignment.Name}";
+            "No assignment selected";
+
+        ResponseEditor.Placeholder =
+            "Enter your assignment response here...";
+
+        return;
     }
+
+    SelectedAssignmentLabel.Text =
+        $"Selected Assignment: " +
+        $"{selectedAssignment.Name}";
+
+    if (
+        selectedAssignment.IsQuiz
+        &&
+        !string.IsNullOrWhiteSpace(
+            selectedAssignment.QuizQuestion
+        )
+    )
+    {
+        SelectedQuizQuestionLabel.Text =
+            $"Question: " +
+            $"{selectedAssignment.QuizQuestion}";
+
+        SelectedQuizQuestionLabel.IsVisible =
+            true;
+
+        ResponseEditor.Placeholder =
+            "Enter your quiz answer here...";
+    }
+    else
+    {
+        ResponseEditor.Placeholder =
+            "Enter your assignment response here...";
+    }
+}
 
     private async void SubmitResponseClicked(
         object? sender,

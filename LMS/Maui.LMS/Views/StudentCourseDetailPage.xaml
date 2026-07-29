@@ -213,6 +213,12 @@
                 FontSize="18"
                 FontAttributes="Bold" />
 
+            <Label
+                x:Name="SelectedQuizQuestionLabel"
+                FontSize="20"
+                FontAttributes="Bold"
+                IsVisible="False" />
+
             <Editor
                 x:Name="ResponseEditor"
                 Placeholder="Enter your assignment response here..."
