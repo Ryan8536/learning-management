@@ -448,6 +448,10 @@
             <Button
                 Text="Export Course Assignments"
                 Clicked="ExportAssignmentsClicked" />
+            
+             <Button
+                Text="Export Gradebook as CSV"
+                Clicked="ExportGradebookClicked" />
 
             <Entry
                 x:Name="AssignmentImportFileNameEntry"
