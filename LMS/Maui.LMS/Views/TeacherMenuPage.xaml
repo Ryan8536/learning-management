@@ -131,6 +131,110 @@
                 HeightRequest="1" />
 
             <Label
+                Text="Semester Date Management"
+                FontSize="26"
+                FontAttributes="Bold" />
+
+            <Label
+                Text="Create and manage semester start and stop dates."
+                FontSize="16" />
+
+            <Entry
+                x:Name="SemesterNameEntry"
+                Placeholder="Semester name, such as Fall 2026" />
+
+            <Label
+                Text="Start Date"
+                FontSize="16" />
+
+            <DatePicker
+                x:Name="SemesterStartDatePicker" />
+
+            <Label
+                Text="Stop Date"
+                FontSize="16" />
+
+            <DatePicker
+                x:Name="SemesterEndDatePicker" />
+
+            <CollectionView
+                x:Name="ManagedSemestersCollectionView"
+                HeightRequest="250"
+                SelectionMode="Single"
+                SelectionChanged="ManagedSemesterSelectionChanged">
+
+                <CollectionView.EmptyView>
+
+                    <Label
+                        Text="No semester date ranges are available."
+                        FontSize="17"
+                        HorizontalOptions="Center" />
+
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+
+                        <VerticalStackLayout
+                            Padding="10"
+                            Spacing="3">
+
+                            <Label
+                                Text="{Binding Name}"
+                                FontSize="20"
+                                FontAttributes="Bold" />
+
+                            <Label
+                                Text="{Binding StartDate,
+                                       StringFormat='Start: {0:MM/dd/yyyy}'}" />
+
+                            <Label
+                                Text="{Binding EndDate,
+                                       StringFormat='Stop: {0:MM/dd/yyyy}'}" />
+
+                        </VerticalStackLayout>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+            <Grid
+                ColumnDefinitions="*,*"
+                RowDefinitions="Auto,Auto"
+                ColumnSpacing="12"
+                RowSpacing="12">
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Text="Add Semester"
+                    Clicked="AddSemesterClicked" />
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Text="Update Semester"
+                    Clicked="UpdateSemesterClicked" />
+
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Text="Delete Semester"
+                    Clicked="DeleteSemesterClicked" />
+
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="Clear Semester Form"
+                    Clicked="ClearSemesterFormClicked" />
+
+            </Grid>
+
+            <BoxView
+                HeightRequest="1" />
+
+            <Label
                 Text="University Students"
                 FontSize="26"
                 FontAttributes="Bold" />
