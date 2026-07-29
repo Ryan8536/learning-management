@@ -47,13 +47,15 @@ public partial class TeacherMenuPage :
     }
 
     private void TeacherMenuPageNavigatedTo(
-        object? sender,
-        NavigatedToEventArgs e)
-    {
-        viewModel.RefreshCourses();
-        RefreshStudents();
-        RefreshSemesters();
-    }
+    object? sender,
+    NavigatedToEventArgs e)
+{
+    StudentServiceProxy.Current.Refresh();
+
+    viewModel.RefreshCourses();
+    RefreshStudents();
+    RefreshSemesters();
+}
 
     private void RefreshStudents()
     {
