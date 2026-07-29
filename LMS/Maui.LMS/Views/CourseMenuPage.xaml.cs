@@ -27,6 +27,9 @@ public partial class CourseMenuPage : ContentPage
     private ObservableCollection<Assignment> displayedAssignments;
     private ObservableCollection<Course> displayedDestinationCourses;
     private ObservableCollection<Announcement> displayedAnnouncements;
+
+    private ObservableCollection<SubmissionComment>
+    displayedSubmissionComments;
     
     private ObservableCollection<AssignmentGroup>
         displayedAssignmentGroups;
@@ -59,6 +62,9 @@ public partial class CourseMenuPage : ContentPage
         displayedAnnouncements =
             new ObservableCollection<Announcement>();
 
+        displayedSubmissionComments =
+            new ObservableCollection<SubmissionComment>();
+
         displayedAssignmentGroups =
             new ObservableCollection<AssignmentGroup>();
 
@@ -88,6 +94,9 @@ public partial class CourseMenuPage : ContentPage
 
         AnnouncementsCollectionView.ItemsSource =
             displayedAnnouncements;
+
+        SubmissionCommentsCollectionView.ItemsSource =
+            displayedSubmissionComments;
 
         AssignmentGroupsCollectionView.ItemsSource =
             displayedAssignmentGroups;
@@ -138,6 +147,9 @@ public partial class CourseMenuPage : ContentPage
         ModuleNameEntry.Text = "";
         AssignmentGroupNameEntry.Text = "";
         AssignmentGroupWeightEntry.Text = "";
+        InstructorReplyEditor.Text = "";
+        InstructorCommentStatusLabel.Text = "";
+        displayedSubmissionComments.Clear();
 
         ClearModuleItemForm();
         ClearAssignmentForm();
@@ -285,6 +297,8 @@ public partial class CourseMenuPage : ContentPage
     selectedRosterStudent =
         RosterCollectionView.SelectedItem
         as Student;
+
+    RefreshSubmissionComments();
 }
 
     private void StudentSelectionChanged(
@@ -430,6 +444,10 @@ public partial class CourseMenuPage : ContentPage
                 studentToRemove.Id
         );
     }
+
+    CourseServiceProxy.Current.SaveCourse(
+    CourseId
+);
 
     selectedRosterStudent = null;
 
@@ -1211,6 +1229,8 @@ private async void DeleteModuleClicked(
         selectedAssignment =
             AssignmentsCollectionView.SelectedItem
             as Assignment;
+
+        RefreshSubmissionComments();
 
         if (selectedAssignment == null)
         {
@@ -2242,6 +2262,166 @@ private void ClearQuizForm()
         RefreshGroupAssignments();
     }
 
+    private Submission? GetLatestSelectedSubmission()
+    {
+        if (
+            selectedAssignment == null
+            ||
+            selectedRosterStudent == null
+        )
+        {
+            return null;
+        }
+
+        return selectedAssignment.Submissions
+            .Where(
+                submission =>
+                    submission.StudentId ==
+                        selectedRosterStudent.Id
+            )
+            .OrderByDescending(
+                submission =>
+                    submission.SubmissionDate
+            )
+            .FirstOrDefault();
+    }
+
+    private void RefreshSubmissionComments()
+    {
+        displayedSubmissionComments.Clear();
+
+        InstructorReplyEditor.Text =
+            string.Empty;
+
+        if (
+            selectedAssignment == null
+            ||
+            selectedRosterStudent == null
+        )
+        {
+            InstructorCommentStatusLabel.Text =
+                "Select both an assignment and a student from the course roster.";
+
+            return;
+        }
+
+        Submission? submission =
+            GetLatestSelectedSubmission();
+
+        if (submission == null)
+        {
+            InstructorCommentStatusLabel.Text =
+                $"{selectedRosterStudent.Name} has not submitted this assignment.";
+
+            return;
+        }
+
+        submission.Comments ??=
+            new List<SubmissionComment>();
+
+        foreach (
+            SubmissionComment comment
+            in submission.Comments
+                .OrderBy(
+                    comment =>
+                        comment.PostedDate
+                ))
+        {
+            displayedSubmissionComments.Add(
+                comment
+            );
+        }
+
+        InstructorCommentStatusLabel.Text =
+            $"Viewing {selectedRosterStudent.Name}'s latest submission: " +
+            $"{displayedSubmissionComments.Count} comment(s)";
+    }
+
+    private async void PostInstructorReplyClicked(
+        object? sender,
+        EventArgs e)
+    {
+        if (
+            currentCourse == null
+            ||
+            selectedAssignment == null
+            ||
+            selectedRosterStudent == null
+        )
+        {
+            await DisplayAlertAsync(
+                "Reply Not Added",
+                "Select both an assignment and a student from the course roster.",
+                "OK"
+            );
+
+            return;
+        }
+
+        Submission? submission =
+            GetLatestSelectedSubmission();
+
+        if (submission == null)
+        {
+            await DisplayAlertAsync(
+                "No Submission Found",
+                $"{selectedRosterStudent.Name} has not submitted this assignment.",
+                "OK"
+            );
+
+            return;
+        }
+
+        string message =
+            InstructorReplyEditor.Text?.Trim()
+            ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            await DisplayAlertAsync(
+                "Reply Required",
+                "Enter a reply before posting.",
+                "OK"
+            );
+
+            return;
+        }
+
+        SubmissionComment? comment =
+            CourseServiceProxy.Current
+                .AddSubmissionComment(
+                    currentCourse.Id,
+                    selectedAssignment.Id,
+                    submission.Id,
+                    0,
+                    "Instructor",
+                    "Instructor",
+                    message
+                );
+
+        if (comment == null)
+        {
+            await DisplayAlertAsync(
+                "Reply Not Added",
+                "The instructor reply could not be saved.",
+                "OK"
+            );
+
+            return;
+        }
+
+        InstructorReplyEditor.Text =
+            string.Empty;
+
+        RefreshSubmissionComments();
+
+        await DisplayAlertAsync(
+            "Reply Added",
+            "Your reply was added to the assignment conversation.",
+            "OK"
+        );
+    }
+
     private async Task<bool> ValidateAssignmentForm()
     {
         if (string.IsNullOrWhiteSpace(
@@ -2351,6 +2531,7 @@ private void ClearQuizForm()
             null;
 
         ClearAssignmentForm();
+        RefreshSubmissionComments();
     }
 
     private void ClearAssignmentForm()
@@ -2389,6 +2570,8 @@ private void ClearQuizForm()
 
     selectedRosterStudent =
         null;
+
+    RefreshSubmissionComments();
 
     if (currentCourse == null)
     {

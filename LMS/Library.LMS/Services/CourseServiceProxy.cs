@@ -884,32 +884,35 @@ public bool DeleteAnnouncement(
 
 
    public void AddAssignment(
-        int courseId,
-        string? name,
-        string? description,
-        int availablePoints,
-        DateTime dueDate)
+    int courseId,
+    string? name,
+    string? description,
+    int availablePoints,
+    DateTime dueDate)
+{
+    if (string.IsNullOrWhiteSpace(name))
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return;
-        }
+        return;
+    }
 
-        Course? course = GetById(courseId);
+    Course? course =
+        GetById(courseId);
 
-        if (course == null)
-        {
-            return;
-        }
+    if (course == null)
+    {
+        return;
+    }
 
-        int newAssignmentId =
-            course.Assignments.Count == 0
+    int newAssignmentId =
+        course.Assignments.Count == 0
             ? 1
             : course.Assignments.Max(
-                assignment => assignment.Id
+                assignment =>
+                    assignment.Id
             ) + 1;
 
-        Assignment newAssignment = new Assignment
+    Assignment newAssignment =
+        new Assignment
         {
             Id = newAssignmentId,
             Name = name,
@@ -918,10 +921,12 @@ public bool DeleteAnnouncement(
             DueDate = dueDate
         };
 
-        course.Assignments.Add(newAssignment);
-    }
+    course.Assignments.Add(
+        newAssignment
+    );
 
-
+    SaveCourse(courseId);
+}
     public void AddQuiz(
     int courseId,
     string? name,
@@ -949,10 +954,11 @@ public bool DeleteAnnouncement(
 
     int newAssignmentId =
         course.Assignments.Count == 0
-        ? 1
-        : course.Assignments.Max(
-            assignment => assignment.Id
-        ) + 1;
+            ? 1
+            : course.Assignments.Max(
+                assignment =>
+                    assignment.Id
+            ) + 1;
 
     Assignment newQuiz =
         new Assignment
@@ -966,9 +972,12 @@ public bool DeleteAnnouncement(
             DueDate = dueDate
         };
 
-    course.Assignments.Add(newQuiz);
-}
+    course.Assignments.Add(
+        newQuiz
+    );
 
+    SaveCourse(courseId);
+}
     public void UpdateAssignment(
         int courseId,
         int assignmentId,
@@ -1516,6 +1525,8 @@ public bool DeleteAnnouncement(
         }
 
         course.Roster.Add(student);
+
+        SaveCourse(courseId);
     }
 
     public bool UnenrollStudent(
@@ -1633,6 +1644,93 @@ public bool DeleteAnnouncement(
     );
 
     return newSubmission;
+}
+
+public SubmissionComment? AddSubmissionComment(
+    int courseId,
+    int assignmentId,
+    int submissionId,
+    int authorId,
+    string? authorName,
+    string? authorRole,
+    string? message)
+{
+    if (string.IsNullOrWhiteSpace(message))
+    {
+        return null;
+    }
+
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return null;
+    }
+
+    Assignment? assignment =
+        course.Assignments.FirstOrDefault(
+            assignment =>
+                assignment.Id == assignmentId
+        );
+
+    if (assignment == null)
+    {
+        return null;
+    }
+
+    Submission? submission =
+        assignment.Submissions.FirstOrDefault(
+            submission =>
+                submission.Id == submissionId
+        );
+
+    if (submission == null)
+    {
+        return null;
+    }
+
+    submission.Comments ??=
+        new List<SubmissionComment>();
+
+    int newCommentId =
+        submission.Comments.Count == 0
+            ? 1
+            : submission.Comments.Max(
+                comment => comment.Id
+            ) + 1;
+
+    SubmissionComment comment =
+        new SubmissionComment
+        {
+            Id = newCommentId,
+            SubmissionId = submissionId,
+            AuthorId = authorId,
+            AuthorName =
+                string.IsNullOrWhiteSpace(authorName)
+                    ? "Unknown User"
+                    : authorName.Trim(),
+            AuthorRole =
+                string.IsNullOrWhiteSpace(authorRole)
+                    ? "User"
+                    : authorRole.Trim(),
+            Message = message.Trim(),
+            PostedDate = DateTime.Now
+        };
+
+    submission.Comments.Add(comment);
+
+    bool saved =
+        SaveCourse(courseId);
+
+    if (!saved)
+    {
+        submission.Comments.Remove(comment);
+
+        return null;
+    }
+
+    return comment;
 }
 
     public bool GradeSubmission(
