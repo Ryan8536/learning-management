@@ -8,13 +8,19 @@ public class Assignment : ModuleItem
 
     public DateTime DueDate { get; set; }
 
+    public bool IsQuiz { get; set; }
+
+    public string? QuizQuestion { get; set; }
+
     public List<Submission> Submissions { get; set; }
 
     public override string ItemType
     {
         get
         {
-            return "Assignment";
+            return IsQuiz
+                ? "Quiz"
+                : "Assignment";
         }
     }
 
@@ -22,12 +28,22 @@ public class Assignment : ModuleItem
     {
         get
         {
-            return $"Assignment: {Name} - Due {DueDate:MM/dd/yyyy}";
+            string itemName =
+                IsQuiz
+                    ? "Quiz"
+                    : "Assignment";
+
+            return
+                $"{itemName}: {Name} - " +
+                $"Due {DueDate:MM/dd/yyyy}";
         }
     }
 
     public Assignment()
     {
-        Submissions = new List<Submission>();
+        Submissions =
+            new List<Submission>();
+
+        IsQuiz = false;
     }
 }

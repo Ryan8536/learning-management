@@ -745,6 +745,54 @@ public bool DeleteAnnouncement(
         course.Assignments.Add(newAssignment);
     }
 
+
+    public void AddQuiz(
+    int courseId,
+    string? name,
+    string? description,
+    string? question,
+    int availablePoints,
+    DateTime dueDate)
+{
+    if (
+        string.IsNullOrWhiteSpace(name)
+        ||
+        string.IsNullOrWhiteSpace(question)
+    )
+    {
+        return;
+    }
+
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return;
+    }
+
+    int newAssignmentId =
+        course.Assignments.Count == 0
+        ? 1
+        : course.Assignments.Max(
+            assignment => assignment.Id
+        ) + 1;
+
+    Assignment newQuiz =
+        new Assignment
+        {
+            Id = newAssignmentId,
+            Name = name,
+            Description = description,
+            QuizQuestion = question,
+            IsQuiz = true,
+            AvailablePoints = availablePoints,
+            DueDate = dueDate
+        };
+
+    course.Assignments.Add(newQuiz);
+}
+
     public void UpdateAssignment(
         int courseId,
         int assignmentId,

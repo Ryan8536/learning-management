@@ -25,11 +25,10 @@
                 Text="{Binding Code}"
                 HorizontalOptions="Center" />
 
-
             <Button
-               Text="Course Settings"
-               Clicked="OpenCourseSettingsClicked" /> 
-                  
+                Text="Course Settings"
+                Clicked="OpenCourseSettingsClicked" />
+
             <!-- Announcements -->
 
             <Label
@@ -379,7 +378,16 @@
                                 FontAttributes="Bold" />
 
                             <Label
+                                Text="{Binding ItemType,
+                                       StringFormat='Type: {0}'}"
+                                FontAttributes="Italic" />
+
+                            <Label
                                 Text="{Binding Description}" />
+
+                            <Label
+                                Text="{Binding QuizQuestion,
+                                       StringFormat='Question: {0}'}" />
 
                             <Label
                                 Text="{Binding AvailablePoints,
@@ -437,6 +445,47 @@
                 Clicked="ClearAssignmentFormClicked" />
 
             <Label
+                Text="Create Quiz"
+                FontSize="24"
+                Margin="0,20,0,0" />
+
+            <Label
+                Text="Create a quiz with one free-response question."
+                FontSize="14" />
+
+            <Entry
+                x:Name="QuizNameEntry"
+                Placeholder="Quiz name" />
+
+            <Editor
+                x:Name="QuizDescriptionEditor"
+                Placeholder="Quiz description"
+                HeightRequest="90" />
+
+            <Editor
+                x:Name="QuizQuestionEditor"
+                Placeholder="Quiz question"
+                HeightRequest="120" />
+
+            <Entry
+                x:Name="QuizPointsEntry"
+                Placeholder="Available points"
+                Keyboard="Numeric" />
+
+            <Label Text="Quiz Due Date" />
+
+            <DatePicker
+                x:Name="QuizDueDatePicker" />
+
+            <Button
+                Text="Add Quiz"
+                Clicked="AddQuizClicked" />
+
+            <Button
+                Text="Clear Quiz Form"
+                Clicked="ClearQuizFormClicked" />
+
+            <Label
                 Text="Import or Export Assignments"
                 FontSize="24"
                 Margin="0,20,0,0" />
@@ -448,8 +497,8 @@
             <Button
                 Text="Export Course Assignments"
                 Clicked="ExportAssignmentsClicked" />
-            
-             <Button
+
+            <Button
                 Text="Export Gradebook as CSV"
                 Clicked="ExportGradebookClicked" />
 
