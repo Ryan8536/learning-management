@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Json;
 using Library.LMS.Models;
 
 namespace Library.LMS.Services;
@@ -7,11 +9,22 @@ public class CourseServiceProxy
     private static CourseServiceProxy? instance;
     private static readonly object instanceLock = new object();
 
+    private readonly HttpClient httpClient;
+
+    private const string CourseApiUrl =
+        "http://localhost:5219/api/courses";
+
     public List<Course> Courses { get; private set; }
 
     private CourseServiceProxy()
     {
-        Courses = new List<Course>();
+        httpClient =
+            new HttpClient();
+
+        Courses =
+            new List<Course>();
+
+        Refresh();
     }
 
     public static CourseServiceProxy Current
@@ -30,6 +43,38 @@ public class CourseServiceProxy
         }
     }
 
+    public bool Refresh()
+    {
+        try
+        {
+            List<Course>? coursesFromApi =
+                httpClient
+                    .GetFromJsonAsync<List<Course>>(
+                        CourseApiUrl
+                    )
+                    .GetAwaiter()
+                    .GetResult();
+
+            Courses =
+                coursesFromApi
+                ?? new List<Course>();
+
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+        catch (TaskCanceledException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+    }
+
     public void Add(Course? course)
     {
         if (course == null)
@@ -37,11 +82,44 @@ public class CourseServiceProxy
             return;
         }
 
-        course.Id = Courses.Count == 0
-            ? 1
-            : Courses.Max(course => course.Id) + 1;
+        try
+        {
+            HttpResponseMessage response =
+                httpClient
+                    .PostAsJsonAsync(
+                        CourseApiUrl,
+                        course
+                    )
+                    .GetAwaiter()
+                    .GetResult();
 
-        Courses.Add(course);
+            if (!response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            Course? savedCourse =
+                response.Content
+                    .ReadFromJsonAsync<Course>()
+                    .GetAwaiter()
+                    .GetResult();
+
+            if (savedCourse == null)
+            {
+                return;
+            }
+
+            Courses.Add(savedCourse);
+        }
+        catch (HttpRequestException)
+        {
+        }
+        catch (TaskCanceledException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
     }
 
     public Course? GetById(int id)
@@ -51,14 +129,112 @@ public class CourseServiceProxy
         );
     }
 
-    public void Delete(int courseId)
-   {
-    Course? courseToDelete = GetById(courseId);
-
-    if (courseToDelete != null)
+    public bool SaveCourse(
+        int courseId)
     {
-        Courses.Remove(courseToDelete);
+        Course? course =
+            GetById(courseId);
+
+        if (course == null)
+        {
+            return false;
+        }
+
+        try
+        {
+            HttpResponseMessage response =
+                httpClient
+                    .PutAsJsonAsync(
+                        $"{CourseApiUrl}/{courseId}",
+                        course
+                    )
+                    .GetAwaiter()
+                    .GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+
+            Course? savedCourse =
+                response.Content
+                    .ReadFromJsonAsync<Course>()
+                    .GetAwaiter()
+                    .GetResult();
+
+            if (savedCourse == null)
+            {
+                return false;
+            }
+
+            int existingIndex =
+                Courses.FindIndex(
+                    existingCourse =>
+                        existingCourse.Id ==
+                            courseId
+                );
+
+            if (existingIndex >= 0)
+            {
+                Courses[existingIndex] =
+                    savedCourse;
+            }
+
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+        catch (TaskCanceledException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
     }
+
+    public void Delete(
+        int courseId)
+    {
+        try
+        {
+            HttpResponseMessage response =
+                httpClient
+                    .DeleteAsync(
+                        $"{CourseApiUrl}/{courseId}"
+                    )
+                    .GetAwaiter()
+                    .GetResult();
+
+            if (
+                !response.IsSuccessStatusCode
+                &&
+                response.StatusCode !=
+                    HttpStatusCode.NotFound
+            )
+            {
+                return;
+            }
+
+            Course? courseToDelete =
+                GetById(courseId);
+
+            if (courseToDelete != null)
+            {
+                Courses.Remove(
+                    courseToDelete
+                );
+            }
+        }
+        catch (HttpRequestException)
+        {
+        }
+        catch (TaskCanceledException)
+        {
+        }
     }
 
 public Course? CopyCourse(int courseId)
