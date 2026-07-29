@@ -305,6 +305,8 @@ private void AssignmentSelectionChanged(
     SelectedQuizQuestionLabel.IsVisible =
         false;
 
+    ClearSubmissionFile();
+
     if (selectedAssignment == null)
     {
         SelectedAssignmentLabel.Text =
@@ -344,86 +346,223 @@ private void AssignmentSelectionChanged(
             "Enter your assignment response here...";
     }
 }
+private void ClearSubmissionFileClicked(
+    object? sender,
+    EventArgs e)
+{
+    ClearSubmissionFile();
+}
 
-    private async void SubmitResponseClicked(
-        object? sender,
-        EventArgs e)
-    {
-        if (
-            selectedStudent == null
-            ||
-            selectedCourse == null
-        )
-        {
-            await DisplayAlertAsync(
-                "Submission Failed",
-                "The student or course could not be found.",
-                "OK"
-            );
+private void ClearSubmissionFile()
+{
+    SubmissionFileNameEntry.Text =
+        string.Empty;
+}
 
-            return;
-        }
-
-        if (selectedAssignment == null)
-        {
-            await DisplayAlertAsync(
-                "No Assignment Selected",
-                "Select an assignment before submitting.",
-                "OK"
-            );
-
-            return;
-        }
-
-        string response =
-            ResponseEditor.Text?.Trim()
-            ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(response))
-        {
-            await DisplayAlertAsync(
-                "Response Required",
-                "Enter a response before submitting.",
-                "OK"
-            );
-
-            return;
-        }
-
-        Submission? submission =
-            CourseServiceProxy.Current.AddSubmission(
-                selectedCourse.Id,
-                selectedAssignment.Id,
-                selectedStudent.Id,
-                response
-            );
-
-        if (submission == null)
-        {
-            await DisplayAlertAsync(
-                "Submission Failed",
-                "The response could not be submitted.",
-                "OK"
-            );
-
-            return;
-        }
-
-        SubmissionStatusLabel.Text =
-            $"Submitted on " +
-            $"{submission.SubmissionDate:MM/dd/yyyy h:mm tt}";
-
-        ResponseEditor.Text =
-            string.Empty;
-
-        await DisplayAlertAsync(
-            "Response Submitted",
-            $"Your response to " +
-            $"{selectedAssignment.Name} was submitted.",
-            "OK"
+private async Task<string?> CopySubmissionFileFromDownloadsAsync(
+    string fileName)
+{
+    string downloadsFolder =
+        Path.Combine(
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.UserProfile
+            ),
+            "Downloads"
         );
+
+    string sourcePath =
+        Path.Combine(
+            downloadsFolder,
+            fileName
+        );
+
+    if (!File.Exists(sourcePath))
+    {
+        return null;
     }
 
+    string submissionFolder =
+        Path.Combine(
+            FileSystem.AppDataDirectory,
+            "SubmissionFiles"
+        );
+
+    Directory.CreateDirectory(
+        submissionFolder
+    );
+
+    string safeFileName =
+        string.Concat(
+            fileName.Select(
+                character =>
+                    Path.GetInvalidFileNameChars()
+                        .Contains(character)
+                        ? '_'
+                        : character
+            )
+        );
+
+    string storedFileName =
+        $"{Guid.NewGuid()}_{safeFileName}";
+
+    string destinationPath =
+        Path.Combine(
+            submissionFolder,
+            storedFileName
+        );
+
+    await using FileStream sourceStream =
+        File.OpenRead(sourcePath);
+
+    await using FileStream destinationStream =
+        File.Create(destinationPath);
+
+    await sourceStream.CopyToAsync(
+        destinationStream
+    );
+
+    return destinationPath;
+}
+    private async void SubmitResponseClicked(
+    object? sender,
+    EventArgs e)
+{
+    if (
+        selectedStudent == null
+        ||
+        selectedCourse == null
+    )
+    {
+        await DisplayAlertAsync(
+            "Submission Failed",
+            "The student or course could not be found.",
+            "OK"
+        );
+
+        return;
+    }
+
+    if (selectedAssignment == null)
+    {
+        await DisplayAlertAsync(
+            "No Assignment Selected",
+            "Select an assignment before submitting.",
+            "OK"
+        );
+
+        return;
+    }
+
+    string response =
+        ResponseEditor.Text?.Trim()
+        ?? string.Empty;
+
+    string attachedFileName =
+        SubmissionFileNameEntry.Text?.Trim()
+        ?? string.Empty;
+
+    bool hasTextResponse =
+        !string.IsNullOrWhiteSpace(response);
+
+    bool hasFileName =
+        !string.IsNullOrWhiteSpace(
+            attachedFileName
+        );
+
+    if (
+        !hasTextResponse
+        &&
+        !hasFileName
+    )
+    {
+        await DisplayAlertAsync(
+            "Submission Required",
+            "Enter a response or provide a filename from Downloads.",
+            "OK"
+        );
+
+        return;
+    }
+
+    string? attachedFilePath =
+        null;
+
+    if (hasFileName)
+    {
+        try
+        {
+            attachedFilePath =
+                await CopySubmissionFileFromDownloadsAsync(
+                    attachedFileName
+                );
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    attachedFilePath
+                )
+            )
+            {
+                await DisplayAlertAsync(
+                    "File Not Found",
+                    $"The file '{attachedFileName}' was not found in Downloads.",
+                    "OK"
+                );
+
+                return;
+            }
+        }
+        catch (Exception exception)
+        {
+            await DisplayAlertAsync(
+                "File Upload Failed",
+                "The selected file could not be copied. " +
+                exception.Message,
+                "OK"
+            );
+
+            return;
+        }
+    }
+
+    Submission? submission =
+        CourseServiceProxy.Current.AddSubmission(
+            selectedCourse.Id,
+            selectedAssignment.Id,
+            selectedStudent.Id,
+            response,
+            hasFileName
+                ? attachedFileName
+                : null,
+            attachedFilePath
+        );
+
+    if (submission == null)
+    {
+        await DisplayAlertAsync(
+            "Submission Failed",
+            "The submission could not be added.",
+            "OK"
+        );
+
+        return;
+    }
+
+    SubmissionStatusLabel.Text =
+        $"Submitted on " +
+        $"{submission.SubmissionDate:MM/dd/yyyy h:mm tt}";
+
+    ResponseEditor.Text =
+        string.Empty;
+
+    ClearSubmissionFile();
+
+    await DisplayAlertAsync(
+        "Submission Added",
+        $"Your submission to " +
+        $"{selectedAssignment.Name} was added.",
+        "OK"
+    );
+}
     private void RefreshModuleContent()
     {
         displayedModuleContent.Clear();

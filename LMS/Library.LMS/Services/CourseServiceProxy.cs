@@ -1370,70 +1370,94 @@ public bool DeleteAnnouncement(
     }
 
     public Submission? AddSubmission(
-        int courseId,
-        int assignmentId,
-        int studentId,
-        string? content)
-    {
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return null;
-        }
+    int courseId,
+    int assignmentId,
+    int studentId,
+    string? content,
+    string? attachedFileName = null,
+    string? attachedFilePath = null)
+{
+    bool hasContent =
+        !string.IsNullOrWhiteSpace(content);
 
-        Course? course = GetById(courseId);
-
-        if (course == null)
-        {
-            return null;
-        }
-
-        bool studentIsEnrolled =
-            course.Roster.Any(
-                student =>
-                    student.Id == studentId
-            );
-
-        if (!studentIsEnrolled)
-        {
-            return null;
-        }
-
-        Assignment? assignment =
-            course.Assignments.FirstOrDefault(
-                assignment =>
-                    assignment.Id
-                    == assignmentId
-            );
-
-        if (assignment == null)
-        {
-            return null;
-        }
-
-        int newSubmissionId =
-            assignment.Submissions.Count == 0
-            ? 1
-            : assignment.Submissions.Max(
-                submission => submission.Id
-            ) + 1;
-
-        Submission newSubmission =
-            new Submission
-            {
-                Id = newSubmissionId,
-                StudentId = studentId,
-                AssignmentId = assignmentId,
-                Content = content,
-                SubmissionDate = DateTime.Now,
-                Grade = null
-            };
-
-        assignment.Submissions.Add(
-            newSubmission
+    bool hasAttachedFile =
+        !string.IsNullOrWhiteSpace(
+            attachedFileName
+        )
+        &&
+        !string.IsNullOrWhiteSpace(
+            attachedFilePath
         );
 
-        return newSubmission;
+    if (
+        !hasContent
+        &&
+        !hasAttachedFile
+    )
+    {
+        return null;
     }
+
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return null;
+    }
+
+    bool studentIsEnrolled =
+        course.Roster.Any(
+            student =>
+                student.Id == studentId
+        );
+
+    if (!studentIsEnrolled)
+    {
+        return null;
+    }
+
+    Assignment? assignment =
+        course.Assignments.FirstOrDefault(
+            assignment =>
+                assignment.Id ==
+                    assignmentId
+        );
+
+    if (assignment == null)
+    {
+        return null;
+    }
+
+    int newSubmissionId =
+        assignment.Submissions.Count == 0
+        ? 1
+        : assignment.Submissions.Max(
+            submission =>
+                submission.Id
+        ) + 1;
+
+    Submission newSubmission =
+        new Submission
+        {
+            Id = newSubmissionId,
+            StudentId = studentId,
+            AssignmentId = assignmentId,
+            Content = content,
+            SubmissionDate = DateTime.Now,
+            Grade = null,
+            AttachedFileName =
+                attachedFileName,
+            AttachedFilePath =
+                attachedFilePath
+        };
+
+    assignment.Submissions.Add(
+        newSubmission
+    );
+
+    return newSubmission;
+}
 
     public bool GradeSubmission(
     int courseId,

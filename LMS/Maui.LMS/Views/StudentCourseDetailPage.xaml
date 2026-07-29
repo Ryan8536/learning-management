@@ -225,6 +225,19 @@
                 HeightRequest="150"
                 AutoSize="TextChanges" />
 
+            <Entry
+    x:Name="SubmissionFileNameEntry"
+    Placeholder="Filename in Downloads, such as homework.pdf" />
+
+<Label
+    Text="Enter the exact name of a file located in your Downloads folder."
+    FontSize="14" />
+
+<Button
+    Text="Clear File"
+    Clicked="ClearSubmissionFileClicked" />
+
+
             <Button
                 Text="Submit Response"
                 Clicked="SubmitResponseClicked" />
