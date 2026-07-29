@@ -80,6 +80,8 @@ public class TeacherMenuViewModel :
 
     public void RefreshCourses()
     {
+        CourseServiceProxy.Current.Refresh();
+
         string? previousSemester =
             SelectedSemester;
 

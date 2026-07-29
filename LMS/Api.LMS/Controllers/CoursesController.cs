@@ -1,3 +1,4 @@
+using Api.LMS.Services;
 using Library.LMS.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -5,88 +6,131 @@ namespace Api.LMS.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CoursesController : ControllerBase
+public class CoursesController :
+    ControllerBase
 {
+    private static readonly object CoursesLock =
+        new object();
+
     private static readonly List<Course> Courses =
-        new List<Course>();
+        CourseFileStore.LoadCourses();
 
     [HttpGet]
-    public ActionResult<IEnumerable<Course>> GetCourses()
+    public ActionResult<IEnumerable<Course>>
+        GetCourses()
     {
-        return Ok(Courses);
+        lock (CoursesLock)
+        {
+            return Ok(
+                Courses
+                    .OrderBy(
+                        course =>
+                            course.Id
+                    )
+                    .ToList()
+            );
+        }
     }
 
     [HttpGet("{id:int}")]
     public ActionResult<Course> GetCourse(
         int id)
     {
-        Course? course =
-            Courses.FirstOrDefault(
-                existingCourse =>
-                    existingCourse.Id == id
-            );
-
-        if (course == null)
+        lock (CoursesLock)
         {
-            return NotFound(
-                $"No course was found with ID {id}."
-            );
-        }
+            Course? course =
+                Courses.FirstOrDefault(
+                    existingCourse =>
+                        existingCourse.Id == id
+                );
 
-        return Ok(course);
+            if (course == null)
+            {
+                return NotFound(
+                    $"No course was found with ID {id}."
+                );
+            }
+
+            return Ok(course);
+        }
     }
 
     [HttpPost]
     public ActionResult<Course> AddCourse(
         Course course)
     {
-        if (string.IsNullOrWhiteSpace(course.Name))
+        if (string.IsNullOrWhiteSpace(
+            course.Name))
         {
             return BadRequest(
                 "The course name is required."
             );
         }
 
-        if (string.IsNullOrWhiteSpace(course.Code))
+        if (string.IsNullOrWhiteSpace(
+            course.Code))
         {
             return BadRequest(
                 "The course code is required."
             );
         }
 
-        course.Id =
-            Courses.Count == 0
-                ? 1
-                : Courses.Max(
-                    existingCourse =>
-                        existingCourse.Id
-                ) + 1;
+        lock (CoursesLock)
+        {
+            course.Id =
+                Courses.Count == 0
+                    ? 1
+                    : Courses.Max(
+                        existingCourse =>
+                            existingCourse.Id
+                    ) + 1;
 
-        course.Roster ??=
-            new List<Student>();
+            course.Name =
+                course.Name.Trim();
 
-        course.Modules ??=
-            new List<Module>();
+            course.Code =
+                course.Code.Trim();
 
-        course.Assignments ??=
-            new List<Assignment>();
+            course.Description =
+                course.Description?.Trim();
 
-        course.AssignmentGroups ??=
-            new List<AssignmentGroup>();
+            course.Semester =
+                course.Semester?.Trim();
 
-        course.Announcements ??=
-            new List<Announcement>();
+            course.Section =
+                course.Section?.Trim();
 
-        Courses.Add(course);
+            CourseFileStore.InitializeCourse(
+                course
+            );
 
-        return CreatedAtAction(
-            nameof(GetCourse),
-            new
+            Courses.Add(course);
+
+            bool saved =
+                CourseFileStore.SaveCourses(
+                    Courses
+                );
+
+            if (!saved)
             {
-                id = course.Id
-            },
-            course
-        );
+                Courses.Remove(course);
+
+                return StatusCode(
+                    StatusCodes
+                        .Status500InternalServerError,
+                    "The course could not be saved."
+                );
+            }
+
+            return CreatedAtAction(
+                nameof(GetCourse),
+                new
+                {
+                    id = course.Id
+                },
+                course
+            );
+        }
     }
 
     [HttpPut("{id:int}")]
@@ -94,19 +138,6 @@ public class CoursesController : ControllerBase
         int id,
         Course updatedCourse)
     {
-        Course? existingCourse =
-            Courses.FirstOrDefault(
-                course =>
-                    course.Id == id
-            );
-
-        if (existingCourse == null)
-        {
-            return NotFound(
-                $"No course was found with ID {id}."
-            );
-        }
-
         if (string.IsNullOrWhiteSpace(
             updatedCourse.Name))
         {
@@ -123,55 +154,114 @@ public class CoursesController : ControllerBase
             );
         }
 
-        existingCourse.Name =
-            updatedCourse.Name;
+        lock (CoursesLock)
+        {
+            Course? existingCourse =
+                Courses.FirstOrDefault(
+                    course =>
+                        course.Id == id
+                );
 
-        existingCourse.Code =
-            updatedCourse.Code;
+            if (existingCourse == null)
+            {
+                return NotFound(
+                    $"No course was found with ID {id}."
+                );
+            }
 
-        existingCourse.Description =
-            updatedCourse.Description;
+            CourseFileStore.InitializeCourse(
+                updatedCourse
+            );
 
-        existingCourse.Semester =
-            updatedCourse.Semester;
+            int courseIndex =
+                Courses.IndexOf(existingCourse);
 
-        existingCourse.Section =
-            updatedCourse.Section;
+            updatedCourse.Id =
+                id;
 
-        existingCourse.MinimumAPercentage =
-            updatedCourse.MinimumAPercentage;
+            updatedCourse.Name =
+                updatedCourse.Name.Trim();
 
-        existingCourse.MinimumBPercentage =
-            updatedCourse.MinimumBPercentage;
+            updatedCourse.Code =
+                updatedCourse.Code.Trim();
 
-        existingCourse.MinimumCPercentage =
-            updatedCourse.MinimumCPercentage;
+            updatedCourse.Description =
+                updatedCourse.Description?.Trim();
 
-        existingCourse.MinimumDPercentage =
-            updatedCourse.MinimumDPercentage;
+            updatedCourse.Semester =
+                updatedCourse.Semester?.Trim();
 
-        return Ok(existingCourse);
+            updatedCourse.Section =
+                updatedCourse.Section?.Trim();
+
+            Courses[courseIndex] =
+                updatedCourse;
+
+            bool saved =
+                CourseFileStore.SaveCourses(
+                    Courses
+                );
+
+            if (!saved)
+            {
+                Courses[courseIndex] =
+                    existingCourse;
+
+                return StatusCode(
+                    StatusCodes
+                        .Status500InternalServerError,
+                    "The course changes could not be saved."
+                );
+            }
+
+            return Ok(updatedCourse);
+        }
     }
 
     [HttpDelete("{id:int}")]
     public IActionResult DeleteCourse(
         int id)
     {
-        Course? course =
-            Courses.FirstOrDefault(
-                existingCourse =>
-                    existingCourse.Id == id
-            );
-
-        if (course == null)
+        lock (CoursesLock)
         {
-            return NotFound(
-                $"No course was found with ID {id}."
-            );
+            Course? course =
+                Courses.FirstOrDefault(
+                    existingCourse =>
+                        existingCourse.Id == id
+                );
+
+            if (course == null)
+            {
+                return NotFound(
+                    $"No course was found with ID {id}."
+                );
+            }
+
+            int originalIndex =
+                Courses.IndexOf(course);
+
+            Courses.Remove(course);
+
+            bool saved =
+                CourseFileStore.SaveCourses(
+                    Courses
+                );
+
+            if (!saved)
+            {
+                Courses.Insert(
+                    originalIndex,
+                    course
+                );
+
+                return StatusCode(
+                    StatusCodes
+                        .Status500InternalServerError,
+                    "The course deletion could not be saved."
+                );
+            }
+
+            return NoContent();
         }
-
-        Courses.Remove(course);
-
-        return NoContent();
     }
 }
