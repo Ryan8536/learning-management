@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using System.Globalization;
 using Library.LMS.Models;
 using Library.LMS.Services;
 
@@ -1356,6 +1357,163 @@ private async void DeleteModuleClicked(
     {
         ClearAssignmentSelection();
     }
+
+    private async void ExportGradebookClicked(
+    object? sender,
+    EventArgs e)
+{
+    if (currentCourse == null)
+    {
+        await DisplayAlertAsync(
+            "Course Not Found",
+            "The course could not be found.",
+            "OK"
+        );
+
+        return;
+    }
+
+    try
+    {
+        StringBuilder csvBuilder =
+            new StringBuilder();
+
+        List<string> headerValues =
+            new List<string>
+            {
+                "StudentId",
+                "StudentName"
+            };
+
+        foreach (
+            Assignment assignment
+            in currentCourse.Assignments)
+        {
+            headerValues.Add(
+                EscapeCsvValue(
+                    assignment.Name
+                    ?? $"Assignment {assignment.Id}"
+                )
+            );
+        }
+
+        csvBuilder.AppendLine(
+            string.Join(
+                ",",
+                headerValues
+            )
+        );
+
+        foreach (
+            Student student
+            in currentCourse.Roster)
+        {
+            List<string> rowValues =
+                new List<string>
+                {
+                    student.Id.ToString(
+                        CultureInfo.InvariantCulture
+                    ),
+                    EscapeCsvValue(
+                        student.Name
+                        ?? string.Empty
+                    )
+                };
+
+            foreach (
+                Assignment assignment
+                in currentCourse.Assignments)
+            {
+                Submission? gradedSubmission =
+                    assignment.Submissions
+                        .Where(
+                            submission =>
+                                submission.StudentId ==
+                                    student.Id
+                                &&
+                                submission.Grade
+                                    .HasValue
+                        )
+                        .OrderByDescending(
+                            submission =>
+                                submission.SubmissionDate
+                        )
+                        .FirstOrDefault();
+
+                if (
+                    gradedSubmission?.Grade
+                    is double grade)
+                {
+                    rowValues.Add(
+                        grade.ToString(
+                            "0.##",
+                            CultureInfo.InvariantCulture
+                        )
+                    );
+                }
+                else
+                {
+                    rowValues.Add(
+                        string.Empty
+                    );
+                }
+            }
+
+            csvBuilder.AppendLine(
+                string.Join(
+                    ",",
+                    rowValues
+                )
+            );
+        }
+
+        string safeCourseName =
+            string.Concat(
+                (
+                    currentCourse.Name
+                    ?? "Course"
+                )
+                .Select(
+                    character =>
+                        Path.GetInvalidFileNameChars()
+                            .Contains(character)
+                            ? '_'
+                            : character
+                )
+            );
+
+        string fileName =
+            $"{safeCourseName}-gradebook.csv";
+
+        string filePath =
+            Path.Combine(
+                FileSystem.CacheDirectory,
+                fileName
+            );
+
+        await File.WriteAllTextAsync(
+            filePath,
+            csvBuilder.ToString()
+        );
+
+        await Share.Default.RequestAsync(
+            new ShareFileRequest
+            {
+                Title = "Export Gradebook",
+                File = new ShareFile(filePath)
+            }
+        );
+    }
+    catch (Exception exception)
+    {
+        await DisplayAlertAsync(
+            "Export Failed",
+            "The gradebook could not be exported. " +
+            exception.Message,
+            "OK"
+        );
+    }
+}
 
 
     private async void ExportAssignmentsClicked(
