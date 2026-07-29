@@ -984,6 +984,70 @@ public bool DeleteAnnouncement(
         return true;
     }
 
+    public bool UpdateGradeRanges(
+    int courseId,
+    double minimumA,
+    double minimumB,
+    double minimumC,
+    double minimumD)
+{
+    Course? course =
+        GetById(courseId);
+
+    if (course == null)
+    {
+        return false;
+    }
+
+    bool percentagesAreValid =
+        minimumA >= 0
+        &&
+        minimumA <= 100
+        &&
+        minimumB >= 0
+        &&
+        minimumB <= 100
+        &&
+        minimumC >= 0
+        &&
+        minimumC <= 100
+        &&
+        minimumD >= 0
+        &&
+        minimumD <= 100;
+
+    if (!percentagesAreValid)
+    {
+        return false;
+    }
+
+    bool rangesAreOrdered =
+        minimumA > minimumB
+        &&
+        minimumB > minimumC
+        &&
+        minimumC > minimumD;
+
+    if (!rangesAreOrdered)
+    {
+        return false;
+    }
+
+    course.MinimumAPercentage =
+        minimumA;
+
+    course.MinimumBPercentage =
+        minimumB;
+
+    course.MinimumCPercentage =
+        minimumC;
+
+    course.MinimumDPercentage =
+        minimumD;
+
+    return true;
+}
+
     public double? CalculateCourseGrade(
         int courseId,
         int studentId)

@@ -25,6 +25,11 @@
                 Text="{Binding Code}"
                 HorizontalOptions="Center" />
 
+
+            <Button
+               Text="Course Settings"
+               Clicked="OpenCourseSettingsClicked" /> 
+                  
             <!-- Announcements -->
 
             <Label
