@@ -81,6 +81,15 @@
                 FontSize="24"
                 Margin="0,20,0,0" />
 
+            <Entry
+                x:Name="RosterSearchEntry"
+                Placeholder="Search students by name or code"
+                TextChanged="RosterSearchTextChanged" />
+
+            <Label
+                x:Name="RosterSearchStatusLabel"
+                FontSize="14" />
+
             <CollectionView
                 x:Name="RosterCollectionView"
                 HeightRequest="160"

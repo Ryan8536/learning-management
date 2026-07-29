@@ -2404,6 +2404,68 @@ private void ClearQuizForm()
     }
 }
 
+private void RosterSearchTextChanged(
+    object? sender,
+    TextChangedEventArgs e)
+{
+    if (currentCourse == null)
+    {
+        RosterCollectionView.ItemsSource =
+            null;
+
+        RosterSearchStatusLabel.Text =
+            string.Empty;
+
+        return;
+    }
+
+    string searchText =
+        e.NewTextValue?.Trim()
+        ?? string.Empty;
+
+    List<Student> matchingStudents;
+
+    if (string.IsNullOrWhiteSpace(searchText))
+    {
+        matchingStudents =
+            currentCourse.Roster.ToList();
+    }
+    else
+    {
+        matchingStudents =
+            currentCourse.Roster
+                .Where(
+                    student =>
+                        (
+                            student.Name
+                            ?? string.Empty
+                        )
+                        .Contains(
+                            searchText,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                        ||
+                        (
+                            student.Code
+                            ?? string.Empty
+                        )
+                        .Contains(
+                            searchText,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                )
+                .ToList();
+    }
+
+    RosterCollectionView.ItemsSource =
+        matchingStudents;
+
+    RosterSearchStatusLabel.Text =
+        string.IsNullOrWhiteSpace(searchText)
+            ? $"{matchingStudents.Count} student(s)"
+            : $"{matchingStudents.Count} matching student(s)";
+}
+
     private void RefreshStudents()
 {
     displayedStudents.Clear();
