@@ -43,6 +43,33 @@ public class CourseServiceProxy
         }
     }
 
+
+    public async Task<bool> RefreshAsync()
+{
+    try
+    {
+        List<Course>? coursesFromApi =
+            await httpClient
+                .GetFromJsonAsync<List<Course>>(
+                    CourseApiUrl
+                );
+
+        Courses =
+            coursesFromApi
+            ?? new List<Course>();
+
+        return true;
+    }
+    catch (HttpRequestException)
+    {
+        return false;
+    }
+    catch (TaskCanceledException)
+    {
+        return false;
+    }
+}
+
     public bool Refresh()
     {
         try

@@ -46,17 +46,22 @@ public partial class TeacherMenuPage :
         ClearSemesterForm();
     }
 
-    private void TeacherMenuPageNavigatedTo(
+    private async void TeacherMenuPageNavigatedTo(
     object? sender,
     NavigatedToEventArgs e)
 {
-    StudentServiceProxy.Current.Refresh();
+    IsBusy = true;
 
-    viewModel.RefreshCourses();
+    await StudentServiceProxy.Current
+        .RefreshAsync();
+
+    await viewModel.RefreshCoursesAsync();
+
     RefreshStudents();
     RefreshSemesters();
-}
 
+    IsBusy = false;
+}
     private void RefreshStudents()
     {
         selectedStudent =

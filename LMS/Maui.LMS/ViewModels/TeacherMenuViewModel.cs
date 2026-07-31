@@ -78,10 +78,23 @@ public class TeacherMenuViewModel :
         }
     }
 
+    public async Task RefreshCoursesAsync()
+    {
+        await CourseServiceProxy.Current
+            .RefreshAsync();
+
+        UpdateSemesterOptionsAndCourses();
+    }
+
     public void RefreshCourses()
     {
         CourseServiceProxy.Current.Refresh();
 
+        UpdateSemesterOptionsAndCourses();
+    }
+
+    private void UpdateSemesterOptionsAndCourses()
+    {
         string? previousSemester =
             SelectedSemester;
 

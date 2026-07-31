@@ -29,8 +29,6 @@ public class StudentServiceProxy
 
         Students =
             new List<Student>();
-
-        Refresh();
     }
 
     public static StudentServiceProxy Current
@@ -44,6 +42,32 @@ public class StudentServiceProxy
 
                 return instance;
             }
+        }
+    }
+
+    public async Task<bool> RefreshAsync()
+    {
+        try
+        {
+            List<Student>? studentsFromApi =
+                await httpClient
+                    .GetFromJsonAsync<List<Student>>(
+                        StudentApiUrl
+                    );
+
+            Students =
+                studentsFromApi
+                ?? new List<Student>();
+
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+        catch (TaskCanceledException)
+        {
+            return false;
         }
     }
 
@@ -65,15 +89,11 @@ public class StudentServiceProxy
 
             return true;
         }
-        catch (
-            HttpRequestException
-        )
+        catch (HttpRequestException)
         {
             return false;
         }
-        catch (
-            TaskCanceledException
-        )
+        catch (TaskCanceledException)
         {
             return false;
         }
@@ -134,15 +154,11 @@ public class StudentServiceProxy
 
             return addedStudent;
         }
-        catch (
-            HttpRequestException
-        )
+        catch (HttpRequestException)
         {
             return null;
         }
-        catch (
-            TaskCanceledException
-        )
+        catch (TaskCanceledException)
         {
             return null;
         }
@@ -198,15 +214,11 @@ public class StudentServiceProxy
 
             return student;
         }
-        catch (
-            HttpRequestException
-        )
+        catch (HttpRequestException)
         {
             return null;
         }
-        catch (
-            TaskCanceledException
-        )
+        catch (TaskCanceledException)
         {
             return null;
         }
@@ -289,15 +301,11 @@ public class StudentServiceProxy
 
             return true;
         }
-        catch (
-            HttpRequestException
-        )
+        catch (HttpRequestException)
         {
             return false;
         }
-        catch (
-            TaskCanceledException
-        )
+        catch (TaskCanceledException)
         {
             return false;
         }
@@ -340,15 +348,11 @@ public class StudentServiceProxy
 
             return true;
         }
-        catch (
-            HttpRequestException
-        )
+        catch (HttpRequestException)
         {
             return false;
         }
-        catch (
-            TaskCanceledException
-        )
+        catch (TaskCanceledException)
         {
             return false;
         }
