@@ -8,7 +8,7 @@ public partial class StudentMenuPage : ContentPage
 {
     private Student? selectedStudent;
 
-    private ObservableCollection<Student>
+    private readonly ObservableCollection<Student>
         displayedStudents;
 
     public StudentMenuPage()
@@ -22,7 +22,7 @@ public partial class StudentMenuPage : ContentPage
             displayedStudents;
     }
 
-    private void StudentMenuPageNavigatedTo(
+    private async void StudentMenuPageNavigatedTo(
         object? sender,
         NavigatedToEventArgs e)
     {
@@ -31,7 +31,14 @@ public partial class StudentMenuPage : ContentPage
         StudentsCollectionView.SelectedItem =
             null;
 
+        IsBusy = true;
+
+        await StudentServiceProxy.Current
+            .RefreshAsync();
+
         RefreshStudents();
+
+        IsBusy = false;
     }
 
     private void RefreshStudents()
@@ -40,7 +47,11 @@ public partial class StudentMenuPage : ContentPage
 
         foreach (
             Student student
-            in StudentServiceProxy.Current.Students)
+            in StudentServiceProxy.Current.Students
+                .OrderBy(
+                    student =>
+                        student.Name
+                ))
         {
             displayedStudents.Add(student);
         }
