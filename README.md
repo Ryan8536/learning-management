@@ -82,7 +82,7 @@ This repo also tracks the project's own development process — the `backlog/` f
 
 ## Contributors
 
-Built with [crmillfsu](https://github.com/crmillfsu) as a group project.
+Built with [crmillfsu](https://github.com/crmillfsu) as a class project.
 
 ## License
 
